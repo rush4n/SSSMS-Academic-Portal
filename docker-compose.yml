@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # 1. Database Service
+  sssms-db:
+    image: mysql:8.0
+    container_name: sssms_mysql_container
+    restart: always
+    environment:
+      MYSQL_DATABASE: sssms_portal_db
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3307:3306" # Maps localhost:3307 to container:3306 (prevents conflict if you have local MySQL)
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # 2. Backend Service
+  backend:
+    build: ./backend
+    container_name: sssms_backend_container
+    ports:
+      - "8080:8080"
+    depends_on:
+      - sssms-db
+    environment:
+      SPRING_DATASOURCE_PASSWORD: root_password
+
+  # 3. Frontend Service
+  frontend:
+    build: ./frontend
+    container_name: sssms_frontend_container
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app # Hot Reloading: Maps your local folder to the container
+      - /app/node_modules # Prevents local node_modules from overwriting container's
+    stdin_open: true # Needed for React interactive mode
+    tty: true
+
+volumes:
+  db_data:
