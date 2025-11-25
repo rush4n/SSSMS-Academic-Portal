@@ -24,14 +24,13 @@ const Login = () => {
     const result = await login(email, password);
 
     if (result.success) {
-      // For Phase 2, we trust the button selection for redirection
-      // In Phase 3, we will decode the role from the token
+      // For now we don't use role-based auth
       if (selectedRole === "student") {
         navigate("/student/dashboard");
       } else if (selectedRole === "faculty") {
         navigate("/faculty/dashboard");
       } else {
-        // Default fallback
+        // Default fallback, Although it does not exist for now
         navigate("/admin/dashboard");
       }
     } else {

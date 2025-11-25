@@ -16,8 +16,9 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // IMPORTANT: This key must be at least 256 bits (32 chars).
-    // In production, keep this in application.properties or environment variables.
+    // IMPORTANT:
+    // 1. key must be at least 256 bits.
+    // 2. key must be in application.properties or env variables in production.
     private static final String SECRET_KEY = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
 
     public String extractUsername(String token) {

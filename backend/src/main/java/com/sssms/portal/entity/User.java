@@ -18,7 +18,8 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
-public class User implements UserDetails { // Implements UserDetails for Spring Security
+// Implements UserDetails for Spring Security
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +29,8 @@ public class User implements UserDetails { // Implements UserDetails for Spring 
     private String email;
 
     @Column(nullable = false)
-    private String passwordHash; // We will map this to 'password' for Spring Security
+    // We will map this to 'password' for Spring Security
+    private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -36,7 +38,7 @@ public class User implements UserDetails { // Implements UserDetails for Spring 
 
     private boolean isActive = true;
 
-    // --- UserDetails Implementation Methods ---
+    // UserDetails Implementation Methods
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

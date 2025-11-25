@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 public class RegisterRequest {
     private String email;
     private String password;
-    private Role role; // STUDENT, FACULTY, or ADMIN
+    private Role role;
 }

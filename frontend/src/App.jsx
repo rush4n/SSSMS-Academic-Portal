@@ -8,7 +8,7 @@ import {
 import { AuthProvider } from "./context/AuthContext";
 import Login from "./pages/Login";
 
-// Placeholder Components for testing redirection
+// Placeholder Components for Black-Box testing redirection
 const StudentDashboard = () => (
   <div className="p-10 text-2xl">Student Dashboard</div>
 );
