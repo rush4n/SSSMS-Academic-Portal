@@ -6,6 +6,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.http.ResponseCookie;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -68,5 +69,25 @@ public class JwtUtil {
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    // 1. Generate the Cookie
+    public ResponseCookie generateJwtCookie(UserDetails userDetails) {
+        String jwt = generateToken(userDetails); // Uses your existing logic
+
+        return ResponseCookie.from("jwt-token", jwt)
+                .path("/api")      // Cookie only sent for API requests
+                .maxAge(24 * 60 * 60) // 24 hours
+                .httpOnly(true)    // JavaScript cannot read this (XSS Protection)
+                .secure(false)     // Set to TRUE in Production (HTTPS). False for localhost.
+                .sameSite("Strict") // CSRF Protection
+                .build();
+    }
+
+    // 2. Generate a "Clean" cookie for Logout
+    public ResponseCookie getCleanJwtCookie() {
+        return ResponseCookie.from("jwt-token", null)
+                .path("/api")
+                .build();
     }
 }

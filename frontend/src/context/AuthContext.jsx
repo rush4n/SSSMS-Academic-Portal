@@ -1,64 +1,69 @@
-import React, { createContext, useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode";
+import React, { createContext, useState, useEffect, useContext } from "react"; // <--- 1. Add useContext here
 import api from "../api/axiosConfig";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [loading, setLoading] = useState(true);
 
-  // Check if user is already logged in on page load
-  useEffect(() => {
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        // Basic check if token is expired
-        if (decoded.exp * 1000 < Date.now()) {
-          logout();
-        } else {
-          setUser({ email: decoded.sub, ...decoded });
-        }
-      } catch (error) {
-        logout();
-      }
+  const checkUserLoggedIn = async () => {
+    try {
+      const response = await api.get("/auth/me");
+      setUser(response.data);
+    } catch (error) {
+      console.log(
+        "User check failed (Normal if not logged in):",
+        error.message
+      );
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-  }, [token]);
+  };
+
+  useEffect(() => {
+    checkUserLoggedIn();
+  }, []);
 
   const login = async (email, password) => {
     try {
-      const response = await api.post("/auth/login", { email, password });
-      const { token } = response.data;
-
-      // Save to LocalStorage
-      localStorage.setItem("token", token);
-      setToken(token);
-
-      const decoded = jwtDecode(token);
-      setUser({ email: decoded.sub });
-
+      await api.post("/auth/login", { email, password });
+      await checkUserLoggedIn();
       return { success: true };
     } catch (error) {
-      console.error("Login failed:", error);
-      return {
-        success: false,
-        error:
-          error.response?.status === 403
-            ? "Invalid credentials"
-            : "Server error. Please try again.",
-      };
+      return { success: false, error: "Invalid Credentials" };
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
-    setUser(null);
+  const logout = async () => {
+    try {
+      await api.post("/auth/logout");
+      setUser(null);
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-500">Connecting to SSSMS Server...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
+};
+
+// ▼▼▼ 2. ADD THIS MISSING EXPORT AT THE BOTTOM ▼▼▼
+export const useAuth = () => {
+  return useContext(AuthContext);
 };

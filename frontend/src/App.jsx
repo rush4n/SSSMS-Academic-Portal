@@ -7,6 +7,8 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Login from "./pages/Login";
+import Unauthorized from "./pages/Unauthorized"; // Import this
+import ProtectedRoute from "./components/routes/ProtectedRoute"; // Import this
 
 // Layouts
 import AdminLayout from "./components/layout/AdminLayout";
@@ -14,34 +16,43 @@ import AdminLayout from "./components/layout/AdminLayout";
 // Admin Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import EnrollStudent from "./pages/admin/EnrollStudent";
-import EnrollFaculty from './pages/admin/EnrollFaculty';
+import EnrollFaculty from "./pages/admin/EnrollFaculty";
 
-// Placeholders for Student/Faculty
-const StudentDashboard = () => (
-  <div className="p-10 text-2xl">Student Dashboard (Coming Soon)</div>
-);
-const FacultyDashboard = () => (
-  <div className="p-10 text-2xl">Faculty Dashboard (Coming Soon)</div>
-);
+// Placeholders
+const StudentDashboard = () => <div className="p-10">Student Dashboard</div>;
+const FacultyDashboard = () => <div className="p-10">Faculty Dashboard</div>;
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
 
-          {/* Admin Routes with Layout */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="enroll-student" element={<EnrollStudent />} />
-            <Route path="add-faculty" element={<EnrollFaculty />} />
+          {/* ------------------- ADMIN ROUTES ------------------- */}
+          {/* Only ROLE_ADMIN can enter this section */}
+          <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="enroll-student" element={<EnrollStudent />} />
+              <Route path="add-faculty" element={<EnrollFaculty />} />
+            </Route>
           </Route>
 
-          {/* Other Routes */}
-          <Route path="/student/dashboard" element={<StudentDashboard />} />
-          <Route path="/faculty/dashboard" element={<FacultyDashboard />} />
+          {/* ------------------- FACULTY ROUTES ------------------- */}
+          {/* ROLE_FACULTY can enter */}
+          <Route element={<ProtectedRoute allowedRoles={["ROLE_FACULTY"]} />}>
+            <Route path="/faculty/dashboard" element={<FacultyDashboard />} />
+          </Route>
+
+          {/* ------------------- STUDENT ROUTES ------------------- */}
+          {/* ROLE_STUDENT can enter */}
+          <Route element={<ProtectedRoute allowedRoles={["ROLE_STUDENT"]} />}>
+            <Route path="/student/dashboard" element={<StudentDashboard />} />
+          </Route>
         </Routes>
       </Router>
     </AuthProvider>
