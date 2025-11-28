@@ -26,11 +26,10 @@ const Login = () => {
     if (result.success) {
       // For now we don't use role-based auth
       if (selectedRole === "student") {
-        navigate("/student/dashboard");
+        navigate("/admin/dashboard");
       } else if (selectedRole === "faculty") {
         navigate("/faculty/dashboard");
-      } else {
-        // Default fallback, Although it does not exist for now
+      } else if (selectedRole === "admin") {
         navigate("/admin/dashboard");
       }
     } else {
@@ -98,6 +97,18 @@ const Login = () => {
             >
               <GraduationCap className="w-4 h-4 mr-2" />
               Faculty
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedRole("admin")}
+              className={`flex-1 flex items-center justify-center py-2 px-4 rounded-md transition-all ${
+                selectedRole === "admin"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <GraduationCap className="w-4 h-4 mr-2" />
+              Admin
             </button>
           </div>
 
