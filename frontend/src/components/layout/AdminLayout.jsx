@@ -38,7 +38,8 @@ const AdminLayout = () => {
 
   const adminTools = [
     { name: 'GPA Ledger', href: '/admin/gpa', icon: BarChart3 },
-    { name: 'Student Management', href: '/admin/enroll-student', icon: Users }, // Maps to Enroll
+    { name: 'Student Management', href: '/admin/enroll-student', icon: UserPlus },
+    { name: "Faculty Management", href: "/admin/add-faculty", icon: Users },
     { name: 'Fee Management', href: '/admin/fees', icon: FileText },
     { name: 'Alerts & Notifications', href: '/admin/alerts', icon: AlertTriangle },
   ];

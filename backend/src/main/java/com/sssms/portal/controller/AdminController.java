@@ -1,6 +1,7 @@
 package com.sssms.portal.controller;
 
 import com.sssms.portal.dto.request.StudentEnrollmentRequest;
+import com.sssms.portal.dto.request.FacultyEnrollmentRequest;
 import com.sssms.portal.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,4 +22,9 @@ public class AdminController {
     public ResponseEntity<String> enrollStudent(@RequestBody StudentEnrollmentRequest request) {
         return ResponseEntity.ok(adminService.enrollStudent(request));
     }
+
+    @PostMapping("/enroll-faculty")
+        public ResponseEntity<String> enrollFaculty(@RequestBody FacultyEnrollmentRequest request) {
+            return ResponseEntity.ok(adminService.enrollFaculty(request));
+        }
 }

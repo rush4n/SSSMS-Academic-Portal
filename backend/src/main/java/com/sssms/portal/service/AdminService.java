@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.sssms.portal.dto.request.FacultyEnrollmentRequest;
+import com.sssms.portal.entity.Faculty;
+import com.sssms.portal.repository.FacultyRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +21,7 @@ public class AdminService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FacultyRepository facultyRepository;
 
     @Transactional // Critical: If saving student fails, user is rolled back
     public String enrollStudent(StudentEnrollmentRequest request) {
@@ -50,4 +54,33 @@ public class AdminService {
 
         return "Student enrolled successfully with ID: " + savedUser.getUserId();
     }
+
+    @Transactional
+        public String enrollFaculty(FacultyEnrollmentRequest request) {
+            // 1. Create User
+            User newUser = User.builder()
+                    .email(request.getEmail())
+                    .passwordHash(passwordEncoder.encode(request.getPassword()))
+                    .role(Role.FACULTY) // Role is FACULTY
+                    .isActive(true)
+                    .build();
+
+            User savedUser = userRepository.save(newUser);
+
+            // 2. Create Profile
+            Faculty newFaculty = Faculty.builder()
+                    .user(savedUser)
+                    .firstName(request.getFirstName())
+                    .lastName(request.getLastName())
+                    .designation(request.getDesignation())
+                    .department(request.getDepartment())
+                    .qualification(request.getQualification())
+                    .phoneNumber(request.getPhoneNumber())
+                    .joiningDate(request.getJoiningDate())
+                    .build();
+
+            facultyRepository.save(newFaculty);
+
+            return "Faculty enrolled successfully with ID: " + savedUser.getUserId();
+        }
 }
