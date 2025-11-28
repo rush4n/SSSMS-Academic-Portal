@@ -24,6 +24,7 @@ public class Faculty {
     private User user;
 
     private String firstName;
+    private String middleName;
     private String lastName;
 
     private String designation; // e.g., "Assistant Professor", "HOD"

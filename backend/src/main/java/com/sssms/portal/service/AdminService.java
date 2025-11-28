@@ -71,6 +71,7 @@ public class AdminService {
             Faculty newFaculty = Faculty.builder()
                     .user(savedUser)
                     .firstName(request.getFirstName())
+                    .middleName(request.getMiddleName())
                     .lastName(request.getLastName())
                     .designation(request.getDesignation())
                     .department(request.getDepartment())
