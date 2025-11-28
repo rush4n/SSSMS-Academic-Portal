@@ -11,6 +11,7 @@ public class StudentEnrollmentRequest {
 
     // Profile Info
     private String firstName;
+    private String middleName;
     private String lastName;
     private String prn;
     private String phoneNumber;

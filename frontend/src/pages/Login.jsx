@@ -26,7 +26,7 @@ const Login = () => {
     if (result.success) {
       // For now we don't use role-based auth
       if (selectedRole === "student") {
-        navigate("/admin/dashboard");
+        navigate("/student/dashboard");
       } else if (selectedRole === "faculty") {
         navigate("/faculty/dashboard");
       } else if (selectedRole === "admin") {

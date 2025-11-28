@@ -36,6 +36,7 @@ public class AdminService {
         Student newStudent = Student.builder()
                 .user(savedUser) // Link here
                 .firstName(request.getFirstName())
+                .middleName(request.getMiddleName())
                 .lastName(request.getLastName())
                 .prn(request.getPrn())
                 .department(request.getDepartment())

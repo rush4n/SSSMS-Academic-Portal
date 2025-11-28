@@ -27,6 +27,7 @@ public class Student {
     private String prn; // Permanent Registration Number
 
     private String firstName;
+    private String middleName;
     private String lastName;
 
     private LocalDate dob;
