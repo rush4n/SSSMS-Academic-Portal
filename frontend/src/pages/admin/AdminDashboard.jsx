@@ -28,7 +28,8 @@ const AdminDashboard = () => {
     };
 
     const adminCards = [
-        { title: 'Student Management', description: 'Add, edit, and manage student profiles', icon: Users, href: '/admin/enroll-student', color: 'blue' },
+        { title: 'Student Management', description: 'Add, edit, and manage student profiles', icon: UserPlus, href: '/admin/enroll-student', color: 'indigo' },
+        { title: 'Faculty Management', description: 'Add, edit, and manage faculty profiles', icon: Users, href: '/admin/add-faculty', color: 'blue' },
         { title: 'Fee Management', description: 'Track student fee records and status', icon: Banknote, href: '/admin/fees', color: 'purple' },
         { title: 'GPA Ledger', description: 'Upload university result ledgers', icon: BarChart3, href: '/admin/gpa', color: 'green' },
         { title: 'Alerts & Notifications', description: 'Create and manage system announcements', icon: AlertTriangle, href: '/admin/alerts', color: 'orange' },
@@ -36,7 +37,8 @@ const AdminDashboard = () => {
 
     const quickActions = [
         { title: 'Enroll New Student', description: 'Register a new student instantly', icon: UserPlus, href: '/admin/enroll-student', color: 'indigo' },
-        { title: 'Manage Timetables', description: 'Update academic schedules', icon: Calendar, href: '/admin/timetables', color: 'blue' },
+        { title: 'Enroll New Faculty', description: 'Register a new faculty instantly', icon: UserPlus, href: '/admin/add-faculty', color: 'blue' },
+        { title: 'Manage Timetables', description: 'Update academic schedules', icon: Calendar, href: '/admin/timetables', color: 'purple' },
     ];
 
     return (
