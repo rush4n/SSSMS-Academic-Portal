@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
-import { User, GraduationCap, Mail, Lock } from "lucide-react";
+import { User, GraduationCap, ShieldCheck, Mail, Lock } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -107,7 +107,7 @@ const Login = () => {
                   : "text-gray-600 hover:text-gray-900"
               }`}
             >
-              <GraduationCap className="w-4 h-4 mr-2" />
+              <ShieldCheck className="w-4 h-4 mr-2" />
               Admin
             </button>
           </div>
