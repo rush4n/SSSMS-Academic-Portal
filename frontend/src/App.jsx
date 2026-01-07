@@ -23,8 +23,9 @@ import EnrollFaculty from "./pages/admin/EnrollFaculty";
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
 import AttendanceSheet from './pages/faculty/AttendanceSheet';
 
-// Placeholders
-const StudentDashboard = () => <div className="p-10">Student Dashboard</div>;
+// Student Pages
+import StudentLayout from './components/layout/StudentLayout';
+import StudentDashboard from './pages/student/StudentDashboard';
 
 function App() {
   return (
@@ -55,9 +56,10 @@ function App() {
             </Route>
 
             {/* ------------------- STUDENT ROUTES ------------------- */}
-            <Route element={<ProtectedRoute allowedRoles={["ROLE_STUDENT"]} />}>
-              <Route path="/student/dashboard" element={<StudentDashboard />} />
+            <Route path="/student" element={<StudentLayout />}>
+              <Route path="dashboard" element={<StudentDashboard />} />
             </Route>
+
           </Routes>
         </Router>
       </AuthProvider>
