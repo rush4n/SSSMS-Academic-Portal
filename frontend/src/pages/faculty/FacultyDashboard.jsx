@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../api/axiosConfig';
 import { BookOpen, Users, Clock, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const FacultyDashboard = () => {
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchSubjects = async () => {
@@ -50,8 +52,8 @@ const FacultyDashboard = () => {
                                         <BookOpen className="w-6 h-6" />
                                     </div>
                                     <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full font-medium">
-                    {sub.subjectCode}
-                  </span>
+                                        {sub.subjectCode}
+                                    </span>
                                 </div>
 
                                 <h3 className="text-lg font-bold text-gray-900 mb-1">{sub.subjectName}</h3>
@@ -60,7 +62,10 @@ const FacultyDashboard = () => {
                                 </p>
 
                                 <div className="border-t border-gray-100 pt-4 flex gap-3">
-                                    <button className="flex-1 bg-purple-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
+                                    <button
+                                        onClick={() => navigate(`/faculty/attendance/${sub.id}`)}
+                                        className="flex-1 bg-purple-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+                                    >
                                         Attendance
                                     </button>
                                     <button className="flex-1 bg-white border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">

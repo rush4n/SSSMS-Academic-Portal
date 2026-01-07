@@ -9,6 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import com.sssms.portal.dto.request.AttendanceRequest;
+import com.sssms.portal.service.FacultyService;
+import com.sssms.portal.entity.Student;
 
 import java.util.List;
 import java.util.Map;
@@ -21,6 +24,7 @@ public class FacultyController {
 
     private final SubjectAllocationRepository allocationRepository;
     private final UserRepository userRepository;
+    private final FacultyService facultyService;
 
     @GetMapping("/my-subjects")
         public ResponseEntity<?> getMySubjects(@AuthenticationPrincipal UserDetails userDetails) {
@@ -42,5 +46,15 @@ public class FacultyController {
             }).collect(Collectors.toList());
 
             return ResponseEntity.ok(response);
+        }
+
+    @GetMapping("/allocation/{id}/students")
+        public ResponseEntity<List<Student>> getStudents(@PathVariable Long id) {
+            return ResponseEntity.ok(facultyService.getStudentsForAllocation(id));
+        }
+
+        @PostMapping("/attendance")
+        public ResponseEntity<String> submitAttendance(@RequestBody AttendanceRequest request) {
+            return ResponseEntity.ok(facultyService.markAttendance(request));
         }
 }

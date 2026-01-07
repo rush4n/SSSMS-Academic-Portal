@@ -12,7 +12,7 @@ import ProtectedRoute from "./components/routes/ProtectedRoute";
 
 // Layouts
 import AdminLayout from "./components/layout/AdminLayout";
-import FacultyLayout from "./components/layout/FacultyLayout"; // Import Faculty Layout
+import FacultyLayout from "./components/layout/FacultyLayout";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -21,6 +21,7 @@ import EnrollFaculty from "./pages/admin/EnrollFaculty";
 
 // Faculty Pages
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
+import AttendanceSheet from './pages/faculty/AttendanceSheet';
 
 // Placeholders
 const StudentDashboard = () => <div className="p-10">Student Dashboard</div>;
@@ -36,7 +37,6 @@ function App() {
             <Route path="/unauthorized" element={<Unauthorized />} />
 
             {/* ------------------- ADMIN ROUTES ------------------- */}
-            {/* Only ROLE_ADMIN can enter here */}
             <Route element={<ProtectedRoute allowedRoles={["ROLE_ADMIN"]} />}>
               <Route path="/admin" element={<AdminLayout />}>
                 <Route path="dashboard" element={<AdminDashboard />} />
@@ -46,16 +46,15 @@ function App() {
             </Route>
 
             {/* ------------------- FACULTY ROUTES ------------------- */}
-            {/* Only ROLE_FACULTY can enter here */}
+            {/* I fixed the nesting here */}
             <Route element={<ProtectedRoute allowedRoles={["ROLE_FACULTY"]} />}>
               <Route path="/faculty" element={<FacultyLayout />}>
                 <Route path="dashboard" element={<FacultyDashboard />} />
-                {/* You can add more faculty pages here later, e.g., Uploads */}
+                <Route path="attendance/:id" element={<AttendanceSheet />} />
               </Route>
             </Route>
 
             {/* ------------------- STUDENT ROUTES ------------------- */}
-            {/* Only ROLE_STUDENT can enter here */}
             <Route element={<ProtectedRoute allowedRoles={["ROLE_STUDENT"]} />}>
               <Route path="/student/dashboard" element={<StudentDashboard />} />
             </Route>
