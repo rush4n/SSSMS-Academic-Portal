@@ -68,9 +68,13 @@ const FacultyDashboard = () => {
                                     >
                                         Attendance
                                     </button>
-                                    <button className="flex-1 bg-white border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                                    <button
+                                        onClick={() => navigate(`/faculty/resources/${sub.id}`)} // Link to Resource Center
+                                        className="flex-1 bg-white border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                                    >
                                         Uploads
                                     </button>
+
                                 </div>
                             </div>
                         ))}

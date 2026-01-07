@@ -22,6 +22,7 @@ import EnrollFaculty from "./pages/admin/EnrollFaculty";
 // Faculty Pages
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
 import AttendanceSheet from './pages/faculty/AttendanceSheet';
+import ResourceCenter from './pages/faculty/ResourceCenter';
 
 // Student Pages
 import StudentLayout from './components/layout/StudentLayout';
@@ -52,6 +53,7 @@ function App() {
               <Route path="/faculty" element={<FacultyLayout />}>
                 <Route path="dashboard" element={<FacultyDashboard />} />
                 <Route path="attendance/:id" element={<AttendanceSheet />} />
+                <Route path="resources/:id" element={<ResourceCenter />} />
               </Route>
             </Route>
 

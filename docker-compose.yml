@@ -29,6 +29,8 @@ services:
         condition: service_healthy
     environment:
       SPRING_DATASOURCE_PASSWORD: root_password
+    volumes:
+      - ./uploads_data:/uploads
 
   # 3. Frontend (React)
   frontend:
