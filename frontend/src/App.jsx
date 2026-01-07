@@ -27,6 +27,7 @@ import ResourceCenter from './pages/faculty/ResourceCenter';
 // Student Pages
 import StudentLayout from './components/layout/StudentLayout';
 import StudentDashboard from './pages/student/StudentDashboard';
+import StudentResources from './pages/student/StudentResources';
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
             {/* ------------------- STUDENT ROUTES ------------------- */}
             <Route path="/student" element={<StudentLayout />}>
               <Route path="dashboard" element={<StudentDashboard />} />
+              <Route path="resources/:subjectCode" element={<StudentResources />} />
             </Route>
 
           </Routes>

@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 @RestController
 @RequestMapping("/api/resources")
 @RequiredArgsConstructor
@@ -67,6 +70,25 @@ public class ResourceController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/student/{subjectCode}")
+        public ResponseEntity<List<Map<String, Object>>> getResourcesBySubject(@PathVariable String subjectCode) {
+            // 1. Fetch resources using the new Repository method
+            List<AcademicResource> resources = resourceRepository.findBySubjectCode(subjectCode);
+
+            // 2. Transform the data for the frontend
+            List<Map<String, Object>> response = resources.stream().map(r -> {
+                Map<String, Object> map = new java.util.HashMap<>();
+                map.put("id", r.getId());
+                map.put("title", r.getTitle());
+                map.put("fileName", r.getFileName());
+                map.put("date", r.getUploadDate());
+                return map;
+            }).collect(Collectors.toList());
+
+            return ResponseEntity.ok(response);
+        }
+
 
     @GetMapping("/download/{fileName}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) {

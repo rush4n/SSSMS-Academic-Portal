@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../api/axiosConfig';
-import { TrendingUp, TrendingDown, Clock, CheckCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Clock, CheckCircle, FileText } from 'lucide-react'; // Added FileText
+import { useNavigate } from 'react-router-dom'; // Added useNavigate
 
 const StudentDashboard = () => {
     const [report, setReport] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate(); // Hook for navigation
 
     useEffect(() => {
         const fetchAttendance = async () => {
@@ -46,21 +48,32 @@ const StudentDashboard = () => {
             <h3 className="text-xl font-bold text-gray-800 mb-4">Subject-wise Attendance</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {report.map((item) => (
-                    <div key={item.subjectCode} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div key={item.subjectCode} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex justify-between mb-4">
                             <span className="bg-gray-100 text-xs px-2 py-1 rounded font-mono text-gray-600">{item.subjectCode}</span>
                             <span className={`text-sm font-bold ${item.percentage >= 75 ? 'text-green-600' : 'text-red-600'}`}>
-                {item.percentage}%
-              </span>
+                                {item.percentage}%
+                            </span>
                         </div>
                         <h4 className="font-bold text-gray-900 mb-2">{item.subjectName}</h4>
                         <div className="text-sm text-gray-500 space-y-1">
                             <div className="flex justify-between"><span>Total Lectures:</span> <span>{item.totalSessions}</span></div>
                             <div className="flex justify-between"><span>Attended:</span> <span>{item.attendedSessions}</span></div>
                         </div>
+
                         {/* Progress Bar */}
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-4">
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-4 mb-4">
                             <div className={`h-2.5 rounded-full ${item.percentage >= 75 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${item.percentage}%` }}></div>
+                        </div>
+
+                        {/* View Materials Button */}
+                        <div className="border-t border-gray-100 pt-4">
+                            <button
+                                onClick={() => navigate(`/student/resources/${item.subjectCode}`)}
+                                className="w-full text-blue-600 font-medium text-sm hover:bg-blue-50 py-2 rounded-lg transition-colors flex items-center justify-center"
+                            >
+                                <FileText className="w-4 h-4 mr-2" /> View Materials
+                            </button>
                         </div>
                     </div>
                 ))}

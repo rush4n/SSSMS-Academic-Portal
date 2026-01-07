@@ -19,46 +19,62 @@ public class StudentService {
     private final AttendanceRecordRepository recordRepository;
 
     public List<StudentAttendanceDTO> getMyAttendance(Long userId) {
-        // 1. Get Student Profile
-        Student student = studentRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Student profile not found"));
+            Student student = studentRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Student profile not found"));
 
-        // 2. Find all Subjects allocated to this student's Class (Year + Dept)
-        // Note: In a real app, we'd query by ClassBatch ID.
-        // For Phase 3/4 simplicity, we iterate allocations matching the student's year.
-
-        List<SubjectAllocation> myAllocations = allocationRepository.findAll().stream()
-                .filter(a -> a.getClassBatch().getCurrentSemester() == student.getCurrentYear())
-                .toList();
-
-        List<StudentAttendanceDTO> report = new ArrayList<>();
-
-        for (SubjectAllocation allocation : myAllocations) {
-            // 3. Count Total Sessions for this Subject
-            List<AttendanceSession> sessions = sessionRepository.findAll().stream()
-                    .filter(s -> s.getAllocation().getId().equals(allocation.getId()))
+            // 1. Find all raw allocations for the student's year
+            List<SubjectAllocation> rawAllocations = allocationRepository.findAll().stream()
+                    .filter(a -> a.getClassBatch().getCurrentSemester() == student.getCurrentYear())
                     .toList();
 
-            int total = sessions.size();
+            // 2. Use a Map to Group by Subject Code to prevent duplicates
+            java.util.Map<String, StudentAttendanceDTO> subjectMap = new java.util.HashMap<>();
 
-            // 4. Count How many this student was PRESENT for
-            long attended = recordRepository.findAll().stream()
-                    .filter(r -> r.getStudent().getId().equals(student.getId())
-                              && r.getSession().getAllocation().getId().equals(allocation.getId())
-                              && r.getStatus() == AttendanceStatus.PRESENT)
-                    .count();
+            for (SubjectAllocation allocation : rawAllocations) {
+                String code = allocation.getSubject().getCode();
+                String name = allocation.getSubject().getName();
 
-            double percent = (total == 0) ? 0 : ((double) attended / total) * 100;
+                // Calculate stats for THIS specific allocation
+                List<AttendanceSession> sessions = sessionRepository.findAll().stream()
+                        .filter(s -> s.getAllocation().getId().equals(allocation.getId()))
+                        .toList();
 
-            report.add(StudentAttendanceDTO.builder()
-                    .subjectName(allocation.getSubject().getName())
-                    .subjectCode(allocation.getSubject().getCode())
-                    .totalSessions(total)
-                    .attendedSessions((int) attended)
-                    .percentage(Math.round(percent * 10.0) / 10.0) // Round to 1 decimal
-                    .build());
+                int sessionCount = sessions.size();
+
+                long attendedCount = recordRepository.findAll().stream()
+                        .filter(r -> r.getStudent().getId().equals(student.getId())
+                                  && r.getSession().getAllocation().getId().equals(allocation.getId())
+                                  && r.getStatus() == AttendanceStatus.PRESENT)
+                        .count();
+
+                // Merge into the Map
+                if (subjectMap.containsKey(code)) {
+                    // If subject exists, add to the totals
+                    StudentAttendanceDTO existing = subjectMap.get(code);
+                    existing.setTotalSessions(existing.getTotalSessions() + sessionCount);
+                    existing.setAttendedSessions(existing.getAttendedSessions() + (int) attendedCount);
+                } else {
+                    // New subject, create entry
+                    StudentAttendanceDTO dto = StudentAttendanceDTO.builder()
+                            .subjectName(name)
+                            .subjectCode(code)
+                            .totalSessions(sessionCount)
+                            .attendedSessions((int) attendedCount)
+                            .percentage(0.0) // Will calculate at end
+                            .build();
+                    subjectMap.put(code, dto);
+                }
+            }
+
+            // 3. Finalize Percentages and convert to List
+            return subjectMap.values().stream().map(dto -> {
+                double percent = (dto.getTotalSessions() == 0) ? 0 :
+                        ((double) dto.getAttendedSessions() / dto.getTotalSessions()) * 100;
+                dto.setPercentage(Math.round(percent * 10.0) / 10.0);
+                return dto;
+            }).collect(java.util.stream.Collectors.toList());
         }
 
-        return report;
+
+
     }
-}
