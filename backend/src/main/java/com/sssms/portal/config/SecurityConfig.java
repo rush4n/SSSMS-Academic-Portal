@@ -43,6 +43,9 @@ public class SecurityConfig {
                                 .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;")
                         )
                 )
+
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> auth
                         // 1. Allow Preflight checks (OPTIONS) explicitly
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -51,9 +54,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
 
                         // 3. Role Endpoints
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/faculty/**").hasAnyRole("FACULTY", "ADMIN")
-                        .requestMatchers("/api/student/**").hasRole("STUDENT")
+                        .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/faculty/**").hasAnyAuthority("ROLE_FACULTY", "ROLE_ADMIN")
+                        .requestMatchers("/api/student/**").hasAuthority("ROLE_STUDENT")
 
                         // 4. Block everything else
                         .anyRequest().authenticated()
@@ -82,7 +85,7 @@ public class SecurityConfig {
         configuration.setAllowCredentials(true);
 
         // Expose Set-Cookie header so browser can see it
-        configuration.setExposedHeaders(List.of("Set-Cookie"));
+        configuration.setAllowedHeaders(List.of("*"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

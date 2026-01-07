@@ -17,9 +17,6 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // IMPORTANT:
-    // 1. key must be at least 256 bits.
-    // 2. key must be in application.properties or env variables in production.
     private static final String SECRET_KEY = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
 
     public String extractUsername(String token) {
@@ -32,7 +29,15 @@ public class JwtUtil {
     }
 
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+        Map<String, Object> extraClaims = new HashMap<>();
+
+        // 1. Get the Role from the User object
+        String role = userDetails.getAuthorities().iterator().next().getAuthority();
+
+        // 2. Put it into the Token
+        extraClaims.put("role", role);
+
+        return generateToken(extraClaims, userDetails);
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
@@ -40,7 +45,7 @@ public class JwtUtil {
                 .claims(extraClaims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 hours valid
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                 .signWith(getSignInKey())
                 .compact();
     }
@@ -71,20 +76,17 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // 1. Generate the Cookie
     public ResponseCookie generateJwtCookie(UserDetails userDetails) {
-        String jwt = generateToken(userDetails); // Uses your existing logic
-
+        String jwt = generateToken(userDetails);
         return ResponseCookie.from("jwt-token", jwt)
-                .path("/api")      // Cookie only sent for API requests
-                .maxAge(24 * 60 * 60) // 24 hours
-                .httpOnly(true)    // JavaScript cannot read this (XSS Protection)
-                .secure(false)     // Set to TRUE in Production (HTTPS). False for localhost.
-                .sameSite("Strict") // CSRF Protection
+                .path("/api")
+                .maxAge(24 * 60 * 60)
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Strict")
                 .build();
     }
 
-    // 2. Generate a "Clean" cookie for Logout
     public ResponseCookie getCleanJwtCookie() {
         return ResponseCookie.from("jwt-token", null)
                 .path("/api")

@@ -1,18 +1,14 @@
 package com.sssms.portal.service;
 
 import com.sssms.portal.dto.request.StudentEnrollmentRequest;
-import com.sssms.portal.entity.Role;
-import com.sssms.portal.entity.Student;
-import com.sssms.portal.entity.User;
-import com.sssms.portal.repository.StudentRepository;
-import com.sssms.portal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.sssms.portal.dto.request.FacultyEnrollmentRequest;
-import com.sssms.portal.entity.Faculty;
-import com.sssms.portal.repository.FacultyRepository;
+import com.sssms.portal.dto.request.AllocationRequest;
+import com.sssms.portal.entity.*;
+import com.sssms.portal.repository.*;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +18,9 @@ public class AdminService {
     private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
     private final FacultyRepository facultyRepository;
+    private final ClassBatchRepository classRepository;
+    private final SubjectRepository subjectRepository;
+    private final SubjectAllocationRepository allocationRepository;
 
     @Transactional // Critical: If saving student fails, user is rolled back
     public String enrollStudent(StudentEnrollmentRequest request) {
@@ -83,5 +82,25 @@ public class AdminService {
             facultyRepository.save(newFaculty);
 
             return "Faculty enrolled successfully with ID: " + savedUser.getUserId();
+        }
+
+        public String allocateSubject(AllocationRequest request) {
+                Faculty faculty = facultyRepository.findById(request.getFacultyId())
+                        .orElseThrow(() -> new RuntimeException("Faculty not found"));
+
+                Subject subject = subjectRepository.findById(request.getSubjectId())
+                        .orElseThrow(() -> new RuntimeException("Subject not found"));
+
+                ClassBatch classBatch = classRepository.findById(request.getClassId())
+                        .orElseThrow(() -> new RuntimeException("Class not found"));
+
+                SubjectAllocation allocation = SubjectAllocation.builder()
+                        .faculty(faculty)
+                        .subject(subject)
+                        .classBatch(classBatch)
+                        .build();
+
+                allocationRepository.save(allocation);
+                return "Subject Assigned Successfully!";
         }
 }

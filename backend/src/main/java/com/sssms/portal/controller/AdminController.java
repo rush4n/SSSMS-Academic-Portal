@@ -3,6 +3,7 @@ package com.sssms.portal.controller;
 import com.sssms.portal.dto.request.StudentEnrollmentRequest;
 import com.sssms.portal.dto.request.FacultyEnrollmentRequest;
 import com.sssms.portal.service.AdminService;
+import com.sssms.portal.dto.request.AllocationRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,5 +27,10 @@ public class AdminController {
     @PostMapping("/enroll-faculty")
         public ResponseEntity<String> enrollFaculty(@RequestBody FacultyEnrollmentRequest request) {
             return ResponseEntity.ok(adminService.enrollFaculty(request));
+     }
+
+    @PostMapping("/allocate-subject")
+        public ResponseEntity<String> allocateSubject(@RequestBody AllocationRequest request) {
+            return ResponseEntity.ok(adminService.allocateSubject(request));
         }
 }
