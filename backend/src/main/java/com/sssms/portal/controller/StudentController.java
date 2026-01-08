@@ -1,22 +1,13 @@
 package com.sssms.portal.controller;
 
-import com.sssms.portal.entity.AcademicResource;
-import com.sssms.portal.entity.Student;
-import com.sssms.portal.entity.SubjectAllocation;
-import com.sssms.portal.entity.User;
-import com.sssms.portal.repository.ResourceRepository;
-import com.sssms.portal.repository.StudentRepository;
-import com.sssms.portal.repository.SubjectAllocationRepository;
-import com.sssms.portal.repository.SubjectRepository;
-import com.sssms.portal.repository.UserRepository;
+import com.sssms.portal.entity.*;
+import com.sssms.portal.repository.*;
 import com.sssms.portal.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import com.sssms.portal.repository.ExamResultRepository;
-import com.sssms.portal.entity.ExamResult;
 
 import java.util.List;
 import java.util.Map;
@@ -30,33 +21,54 @@ public class StudentController {
 
     private final StudentService studentService;
     private final UserRepository userRepository;
-
-    // Inject the missing repositories
     private final StudentRepository studentRepository;
     private final ResourceRepository resourceRepository;
-    private final SubjectRepository subjectRepository;
     private final SubjectAllocationRepository allocationRepository;
     private final ExamResultRepository resultRepository;
+    // 👇 Inject the Assessment Repository
+    private final ClassAssessmentRepository assessmentRepository;
 
     @GetMapping("/my-attendance")
     public ResponseEntity<?> getMyAttendance(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) return ResponseEntity.status(401).build();
-
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-
         return ResponseEntity.ok(studentService.getMyAttendance(user.getUserId()));
     }
 
     @GetMapping("/my-results")
-        public ResponseEntity<?> getMyResults(@AuthenticationPrincipal UserDetails userDetails) {
-            if (userDetails == null) return ResponseEntity.status(401).build();
-            User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-            Student student = studentRepository.findById(user.getUserId()).orElseThrow();
+    public ResponseEntity<?> getMyResults(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        Student student = studentRepository.findById(user.getUserId()).orElseThrow();
 
-            List<ExamResult> results = resultRepository.findByStudentId(student.getId());
+        List<ExamResult> results = resultRepository.findByStudentId(student.getId());
+        return ResponseEntity.ok(results);
+    }
 
-            return ResponseEntity.ok(results);
-        }
+    // 👇 NEW ENDPOINT: Fetch Internal/Unit Test Marks
+    @GetMapping("/my-assessments")
+    public ResponseEntity<?> getMyAssessments(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        Student student = studentRepository.findById(user.getUserId()).orElseThrow();
+
+        List<ClassAssessment> assessments = assessmentRepository.findByStudentId(student.getId());
+
+        // Map data to a simple structure
+        List<Map<String, Object>> response = assessments.stream().map(a -> {
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", a.getId());
+            // We get Subject Name via Allocation -> Subject
+            map.put("subjectName", a.getAllocation().getSubject().getName());
+            map.put("subjectCode", a.getAllocation().getSubject().getCode());
+            map.put("examType", a.getExamType());
+            map.put("obtained", a.getMarksObtained());
+            map.put("max", a.getMaxMarks());
+            return map;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/resources/{subjectCode}")
     public ResponseEntity<?> getResourcesForSubject(
@@ -66,18 +78,13 @@ public class StudentController {
         if (userDetails == null) return ResponseEntity.status(401).build();
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
 
-        // Find the Student profile linked to this User
-        Student student = studentRepository.findById(user.getUserId()).orElseThrow();
+        SubjectAllocation allocation = allocationRepository.findAll().stream()
+                .filter(a -> a.getSubject().getCode().equalsIgnoreCase(subjectCode))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Subject Code mismatch"));
 
-        // 1. Find the Allocation for this Subject + Student's Year
-       SubjectAllocation allocation = allocationRepository.findAll().stream()
-                       .filter(a -> a.getSubject().getCode().equalsIgnoreCase(subjectCode))
-                       .findFirst()
-                       .orElseThrow(() -> new RuntimeException("Subject Code mismatch"));
-        // 2. Fetch Resources
         List<AcademicResource> resources = resourceRepository.findByAllocationId(allocation.getId());
 
-        // 3. Map to DTO
         List<Map<String, Object>> response = resources.stream().map(r -> {
             Map<String, Object> map = new java.util.HashMap<>();
             map.put("title", r.getTitle());

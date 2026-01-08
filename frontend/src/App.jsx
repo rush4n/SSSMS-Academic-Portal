@@ -27,6 +27,8 @@ import FacultyDashboard from "./pages/faculty/FacultyDashboard";
 import AttendanceSheet from './pages/faculty/AttendanceSheet';
 import ResourceCenter from './pages/faculty/ResourceCenter';
 import FacultySubjectList from './pages/faculty/FacultySubjectList';
+import FacultyResultsSubjects from './pages/faculty/FacultyResultsSubjects';
+import GradingSheet from './pages/faculty/GradingSheet';
 
 import NoticesPage from './pages/common/NoticesPage';
 
@@ -73,6 +75,10 @@ function App() {
                 <Route path="resources/:id" element={<ResourceCenter />} />
 
                 <Route path="notices" element={<NoticesPage />} />
+
+                <Route path="results" element={<FacultyResultsSubjects />} />
+                <Route path="grading/:allocationId" element={<GradingSheet />} />
+
               </Route>
             </Route>
 
