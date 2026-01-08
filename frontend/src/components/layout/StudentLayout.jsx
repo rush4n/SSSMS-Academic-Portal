@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 import { LayoutDashboard, User, LogOut, BookOpen, Calendar, Award } from 'lucide-react';
+import { Bell } from 'lucide-react';
 
 const StudentLayout = () => {
     const { user, logout } = useAuth();
@@ -19,7 +20,9 @@ const StudentLayout = () => {
         { name: 'Dashboard', href: '/student/dashboard', icon: LayoutDashboard },
         { name: 'My Profile', href: '/student/profile', icon: User }, // Placeholder
         { name: 'My Results', href: '/student/results', icon: Award }, // Placeholder
+        { name: 'Notices', href: '/student/notices', icon: Bell }, // Add this
     ];
+
 
     return (
         <div className="flex h-screen bg-gray-50">

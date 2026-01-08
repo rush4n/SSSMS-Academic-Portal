@@ -1,0 +1,32 @@
+package com.sssms.portal.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "notices")
+public class Notice {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String content;
+
+    private LocalDateTime date;
+
+    @Enumerated(EnumType.STRING)
+    private TargetRole targetRole; // Who sees this?
+
+    @ManyToOne
+    @JoinColumn(name = "posted_by_id")
+    private User postedBy; // Who posted it?
+}

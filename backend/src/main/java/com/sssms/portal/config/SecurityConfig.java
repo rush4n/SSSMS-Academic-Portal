@@ -53,6 +53,10 @@ public class SecurityConfig {
                         // 2. Auth Endpoints
                         .requestMatchers("/api/auth/**").permitAll()
 
+                        // Notice Board Rules
+                            .requestMatchers(HttpMethod.GET, "/api/notices").authenticated() // Everyone can read
+                            .requestMatchers(HttpMethod.POST, "/api/notices").hasAnyAuthority("ROLE_ADMIN", "ROLE_FACULTY") // Only Admin/Faculty can post
+
                         // 3. Role Endpoints
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/faculty/**").hasAnyAuthority("ROLE_FACULTY", "ROLE_ADMIN")

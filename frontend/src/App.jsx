@@ -24,6 +24,8 @@ import FacultyDashboard from "./pages/faculty/FacultyDashboard";
 import AttendanceSheet from './pages/faculty/AttendanceSheet';
 import ResourceCenter from './pages/faculty/ResourceCenter';
 
+import NoticesPage from './pages/common/NoticesPage';
+
 // Student Pages
 import StudentLayout from './components/layout/StudentLayout';
 import StudentDashboard from './pages/student/StudentDashboard';
@@ -45,6 +47,7 @@ function App() {
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="enroll-student" element={<EnrollStudent />} />
                 <Route path="add-faculty" element={<EnrollFaculty />} />
+                <Route path="notices" element={<NoticesPage />} />
               </Route>
             </Route>
 
@@ -55,6 +58,7 @@ function App() {
                 <Route path="dashboard" element={<FacultyDashboard />} />
                 <Route path="attendance/:id" element={<AttendanceSheet />} />
                 <Route path="resources/:id" element={<ResourceCenter />} />
+                <Route path="notices" element={<NoticesPage />} />
               </Route>
             </Route>
 
@@ -62,6 +66,7 @@ function App() {
             <Route path="/student" element={<StudentLayout />}>
               <Route path="dashboard" element={<StudentDashboard />} />
               <Route path="resources/:subjectCode" element={<StudentResources />} />
+              <Route path="notices" element={<NoticesPage />} />
             </Route>
 
           </Routes>
