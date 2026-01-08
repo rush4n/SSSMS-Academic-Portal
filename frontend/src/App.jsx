@@ -26,6 +26,7 @@ import ManageFaculty from './pages/admin/ManageFaculty';
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
 import AttendanceSheet from './pages/faculty/AttendanceSheet';
 import ResourceCenter from './pages/faculty/ResourceCenter';
+import FacultySubjectList from './pages/faculty/FacultySubjectList';
 
 import NoticesPage from './pages/common/NoticesPage';
 
@@ -58,13 +59,19 @@ function App() {
               </Route>
             </Route>
 
-            {/* ------------------- FACULTY ROUTES ------------------- */}
-            {/* I fixed the nesting here */}
+            {/* FACULTY ROUTES */}
             <Route element={<ProtectedRoute allowedRoles={["ROLE_FACULTY"]} />}>
               <Route path="/faculty" element={<FacultyLayout />}>
                 <Route path="dashboard" element={<FacultyDashboard />} />
+
+                {/* Route for selecting a subject for Attendance */}
+                <Route path="attendance" element={<FacultySubjectList mode="attendance" />} />
                 <Route path="attendance/:id" element={<AttendanceSheet />} />
+
+                {/* Route for selecting a subject for Uploads */}
+                <Route path="upload" element={<FacultySubjectList mode="upload" />} />
                 <Route path="resources/:id" element={<ResourceCenter />} />
+
                 <Route path="notices" element={<NoticesPage />} />
               </Route>
             </Route>
