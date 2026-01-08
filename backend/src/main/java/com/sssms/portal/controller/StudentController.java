@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import com.sssms.portal.repository.ExamResultRepository;
+import com.sssms.portal.entity.ExamResult;
 
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,7 @@ public class StudentController {
     private final ResourceRepository resourceRepository;
     private final SubjectRepository subjectRepository;
     private final SubjectAllocationRepository allocationRepository;
+    private final ExamResultRepository resultRepository;
 
     @GetMapping("/my-attendance")
     public ResponseEntity<?> getMyAttendance(@AuthenticationPrincipal UserDetails userDetails) {
@@ -43,6 +46,17 @@ public class StudentController {
 
         return ResponseEntity.ok(studentService.getMyAttendance(user.getUserId()));
     }
+
+    @GetMapping("/my-results")
+        public ResponseEntity<?> getMyResults(@AuthenticationPrincipal UserDetails userDetails) {
+            if (userDetails == null) return ResponseEntity.status(401).build();
+            User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+            Student student = studentRepository.findById(user.getUserId()).orElseThrow();
+
+            List<ExamResult> results = resultRepository.findByStudentId(student.getId());
+
+            return ResponseEntity.ok(results);
+        }
 
     @GetMapping("/resources/{subjectCode}")
     public ResponseEntity<?> getResourcesForSubject(

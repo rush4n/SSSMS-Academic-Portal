@@ -9,6 +9,9 @@ import com.sssms.portal.dto.request.FacultyEnrollmentRequest;
 import com.sssms.portal.dto.request.AllocationRequest;
 import com.sssms.portal.entity.*;
 import com.sssms.portal.repository.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,9 @@ public class AdminService {
     private final SubjectRepository subjectRepository;
     private final SubjectAllocationRepository allocationRepository;
     private final FeeRepository feeRepository;
+    private final ExamResultRepository resultRepository;
+    private final ResultParserService parserService;
+    private final FileStorageService fileStorageService;
 
     @Transactional // Critical: If saving student fails, user is rolled back
     public String enrollStudent(StudentEnrollmentRequest request) {
@@ -114,4 +120,35 @@ public class AdminService {
                 allocationRepository.save(allocation);
                 return "Subject Assigned Successfully!";
         }
+
+        public String processResultLedger(MultipartFile file) {
+                // 1. Save PDF
+                String fileName = fileStorageService.storeFile(file);
+                String fullPath = "/uploads/" + fileName; // Path inside container
+
+                // 2. Parse PDF via Python
+                List<Map<String, Object>> data = parserService.parsePdf(fullPath);
+
+                int count = 0;
+                for (Map<String, Object> row : data) {
+                    if (row.containsKey("error")) continue;
+
+                    String prn = (String) row.get("prn");
+
+                    // 3. Find Student
+                    studentRepository.findByPrn(prn).ifPresent(student -> {
+                        // 4. Save Result
+                        ExamResult result = ExamResult.builder()
+                                .student(student)
+                                .sgpa(Double.parseDouble(row.get("sgpa").toString()))
+                                .status((String) row.get("status"))
+                                .examSession("Latest") // You can pass this as param later
+                                .resultDate(java.time.LocalDate.now())
+                                .build();
+                        resultRepository.save(result);
+                    });
+                    count++;
+                }
+                return "Processed " + count + " records successfully.";
+            }
 }

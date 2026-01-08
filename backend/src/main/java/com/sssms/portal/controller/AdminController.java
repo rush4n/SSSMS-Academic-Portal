@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -32,5 +33,10 @@ public class AdminController {
     @PostMapping("/allocate-subject")
         public ResponseEntity<String> allocateSubject(@RequestBody AllocationRequest request) {
             return ResponseEntity.ok(adminService.allocateSubject(request));
+        }
+
+    @PostMapping("/upload-results")
+        public ResponseEntity<String> uploadResults(@RequestParam("file") MultipartFile file) {
+            return ResponseEntity.ok(adminService.processResultLedger(file));
         }
 }

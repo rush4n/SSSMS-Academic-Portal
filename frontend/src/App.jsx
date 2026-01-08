@@ -19,6 +19,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import EnrollStudent from "./pages/admin/EnrollStudent";
 import EnrollFaculty from "./pages/admin/EnrollFaculty";
 import FeeManagement from './pages/admin/FeeManagement';
+import GPALedger from "./pages/admin/GPALedger";
 
 // Faculty Pages
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
@@ -31,6 +32,7 @@ import NoticesPage from './pages/common/NoticesPage';
 import StudentLayout from './components/layout/StudentLayout';
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentResources from './pages/student/StudentResources';
+import StudentResults from './pages/student/StudentResults';
 
 function App() {
   return (
@@ -50,6 +52,7 @@ function App() {
                 <Route path="add-faculty" element={<EnrollFaculty />} />
                 <Route path="notices" element={<NoticesPage />} />
                 <Route path="fees" element={<FeeManagement />} />
+                <Route path="gpa" element={<GPALedger />} />
               </Route>
             </Route>
 
@@ -69,6 +72,7 @@ function App() {
               <Route path="dashboard" element={<StudentDashboard />} />
               <Route path="resources/:subjectCode" element={<StudentResources />} />
               <Route path="notices" element={<NoticesPage />} />
+              <Route path="results" element={<StudentResults />} />
             </Route>
 
           </Routes>
