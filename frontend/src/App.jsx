@@ -18,6 +18,7 @@ import FacultyLayout from "./components/layout/FacultyLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import EnrollStudent from "./pages/admin/EnrollStudent";
 import EnrollFaculty from "./pages/admin/EnrollFaculty";
+import FeeManagement from './pages/admin/FeeManagement';
 
 // Faculty Pages
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
@@ -48,6 +49,7 @@ function App() {
                 <Route path="enroll-student" element={<EnrollStudent />} />
                 <Route path="add-faculty" element={<EnrollFaculty />} />
                 <Route path="notices" element={<NoticesPage />} />
+                <Route path="fees" element={<FeeManagement />} />
               </Route>
             </Route>
 

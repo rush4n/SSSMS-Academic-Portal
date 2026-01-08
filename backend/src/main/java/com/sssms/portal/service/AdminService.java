@@ -21,6 +21,7 @@ public class AdminService {
     private final ClassBatchRepository classRepository;
     private final SubjectRepository subjectRepository;
     private final SubjectAllocationRepository allocationRepository;
+    private final FeeRepository feeRepository;
 
     @Transactional // Critical: If saving student fails, user is rolled back
     public String enrollStudent(StudentEnrollmentRequest request) {
@@ -50,6 +51,16 @@ public class AdminService {
                 .build();
 
         studentRepository.save(newStudent);
+
+        double defaultFee = 150000.0;
+
+                FeeRecord feeRecord = FeeRecord.builder()
+                        .student(newStudent)
+                        .totalFee(defaultFee)
+                        .paidAmount(0.0)
+                        .build();
+
+                feeRepository.save(feeRecord);
 
         return "Student enrolled successfully with ID: " + savedUser.getUserId();
     }
