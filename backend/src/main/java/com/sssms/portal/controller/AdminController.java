@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -38,5 +40,24 @@ public class AdminController {
     @PostMapping("/upload-results")
         public ResponseEntity<String> uploadResults(@RequestParam("file") MultipartFile file) {
             return ResponseEntity.ok(adminService.processResultLedger(file));
+        }
+
+    @GetMapping("/faculty/{facultyId}/allocations")
+        public ResponseEntity<?> getFacultyAllocations(@PathVariable Long facultyId) {
+            // We reuse the repository logic directly for simplicity here
+            // In a strict layered app, move this to AdminService
+            return ResponseEntity.ok(adminService.getFacultyAllocations(facultyId));
+        }
+
+        // 2. Remove an Allocation (Un-assign)
+    @DeleteMapping("/allocation/{id}")
+        public ResponseEntity<?> removeAllocation(@PathVariable Long id) {
+            adminService.removeAllocation(id);
+            return ResponseEntity.ok("Allocation removed successfully");
+        }
+
+    @GetMapping("/faculty/all")
+        public ResponseEntity<List<Map<String, Object>>> getAllFaculty() {
+            return ResponseEntity.ok(adminService.getAllFaculty());
         }
 }

@@ -20,6 +20,7 @@ import EnrollStudent from "./pages/admin/EnrollStudent";
 import EnrollFaculty from "./pages/admin/EnrollFaculty";
 import FeeManagement from './pages/admin/FeeManagement';
 import GPALedger from "./pages/admin/GPALedger";
+import ManageFaculty from './pages/admin/ManageFaculty';
 
 // Faculty Pages
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
@@ -53,6 +54,7 @@ function App() {
                 <Route path="notices" element={<NoticesPage />} />
                 <Route path="fees" element={<FeeManagement />} />
                 <Route path="gpa" element={<GPALedger />} />
+                <Route path="manage-faculty" element={<ManageFaculty />} />
               </Route>
             </Route>
 

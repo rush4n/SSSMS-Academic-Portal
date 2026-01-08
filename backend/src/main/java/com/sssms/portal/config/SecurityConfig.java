@@ -58,6 +58,7 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.POST, "/api/notices").hasAnyAuthority("ROLE_ADMIN", "ROLE_FACULTY") // Only Admin/Faculty can post
 
                         // 3. Role Endpoints
+                        .requestMatchers("/api/admin/faculty/all").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/faculty/**").hasAnyAuthority("ROLE_FACULTY", "ROLE_ADMIN")
                         .requestMatchers("/api/student/**").hasAuthority("ROLE_STUDENT")

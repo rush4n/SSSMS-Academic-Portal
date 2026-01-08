@@ -42,6 +42,7 @@ const AdminLayout = () => {
     { name: "Faculty Management", href: "/admin/add-faculty", icon: Users },
     { name: 'Fee Management', href: '/admin/fees', icon: FileText },
     { name: 'Alerts & Notifications', href: '/admin/alerts', icon: AlertTriangle },
+    { name: "Manage Faculty", href: "/admin/manage-faculty", icon: Users, disabled: false },
   ];
 
   return (

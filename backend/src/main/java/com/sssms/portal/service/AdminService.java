@@ -12,6 +12,8 @@ import com.sssms.portal.repository.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -119,6 +121,36 @@ public class AdminService {
 
                 allocationRepository.save(allocation);
                 return "Subject Assigned Successfully!";
+        }
+
+        public void removeAllocation(Long allocationId) {
+                allocationRepository.deleteById(allocationId);
+            }
+
+            public List<Map<String, Object>> getFacultyAllocations(Long facultyId) {
+                List<SubjectAllocation> list = allocationRepository.findByFacultyId(facultyId);
+
+                // Convert to DTO
+                return list.stream().map(a -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", a.getId());
+                    map.put("subjectName", a.getSubject().getName());
+                    map.put("subjectCode", a.getSubject().getCode());
+                    map.put("className", a.getClassBatch().getBatchName());
+                    map.put("division", a.getClassBatch().getDivision());
+                    return map;
+                }).collect(Collectors.toList());
+            }
+
+        public List<Map<String, Object>> getAllFaculty() {
+                return facultyRepository.findAll().stream().map(f -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", f.getId()); // This is the User ID you need
+                    map.put("name", f.getFirstName() + " " + f.getLastName());
+                    map.put("email", f.getUser().getEmail());
+                    map.put("designation", f.getDesignation());
+                    return map;
+                }).collect(Collectors.toList());
         }
 
         public String processResultLedger(MultipartFile file) {
