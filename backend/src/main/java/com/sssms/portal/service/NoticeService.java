@@ -6,6 +6,7 @@ import com.sssms.portal.repository.NoticeRepository;
 import com.sssms.portal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,19 +19,26 @@ public class NoticeService {
 
     private final NoticeRepository noticeRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
-    public void createNotice(NoticeRequest request, String email) {
-        User user = userRepository.findByEmail(email).orElseThrow();
+    public void createNotice(String title, String content, TargetRole targetRole, MultipartFile file, String email) {
+            User user = userRepository.findByEmail(email).orElseThrow();
 
-        Notice notice = Notice.builder()
-                .title(request.getTitle())
-                .content(request.getContent())
-                .targetRole(request.getTargetRole())
-                .date(LocalDateTime.now())
-                .postedBy(user)
-                .build();
+            String fileName = null;
+            if (file != null && !file.isEmpty()) {
+                fileName = fileStorageService.storeFile(file); // Save to disk
+            }
 
-        noticeRepository.save(notice);
+            Notice notice = Notice.builder()
+                    .title(title)
+                    .content(content)
+                    .targetRole(targetRole)
+                    .attachment(fileName) // Save filename
+                    .date(LocalDateTime.now())
+                    .postedBy(user)
+                    .build();
+
+            noticeRepository.save(notice);
     }
 
     public List<Map<String, Object>> getNoticesForUser(String email) {
@@ -56,6 +64,7 @@ public class NoticeService {
                    map.put("date", n.getDate());
                    map.put("author", n.getPostedBy().getEmail());
                    map.put("target", n.getTargetRole());
+                   map.put("attachment", n.getAttachment());
                    return map;
                }).collect(Collectors.toList());
     }

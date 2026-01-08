@@ -20,6 +20,7 @@ public class Notice {
 
     @Column(columnDefinition = "TEXT")
     private String content;
+    private String attachment;
 
     private LocalDateTime date;
 
