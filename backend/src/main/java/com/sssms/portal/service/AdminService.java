@@ -31,10 +31,10 @@ public class AdminService {
     private final ResultParserService parserService;
     private final FileStorageService fileStorageService;
 
-    @Transactional // Critical: If saving student fails, user is rolled back
+    @Transactional
     public String enrollStudent(StudentEnrollmentRequest request) {
 
-        // 1. Create the User (Auth)
+        // 1. Create the User
         User newUser = User.builder()
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
@@ -79,7 +79,7 @@ public class AdminService {
             User newUser = User.builder()
                     .email(request.getEmail())
                     .passwordHash(passwordEncoder.encode(request.getPassword()))
-                    .role(Role.FACULTY) // Role is FACULTY
+                    .role(Role.FACULTY)
                     .isActive(true)
                     .build();
 
@@ -156,7 +156,7 @@ public class AdminService {
         public String processResultLedger(MultipartFile file) {
                 // 1. Save PDF
                 String fileName = fileStorageService.storeFile(file);
-                String fullPath = "/uploads/" + fileName; // Path inside container
+                String fullPath = "/uploads/" + fileName;
 
                 // 2. Parse PDF via Python
                 List<Map<String, Object>> data = parserService.parsePdf(fullPath);

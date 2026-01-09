@@ -1,5 +1,3 @@
-// src/pages/Login.jsx
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
@@ -24,7 +22,6 @@ const Login = () => {
     const result = await login(email, password);
 
     if (result.success) {
-      // For now we don't use role-based auth
       if (selectedRole === "student") {
         navigate("/student/dashboard");
       } else if (selectedRole === "faculty") {

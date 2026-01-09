@@ -16,13 +16,13 @@ public class ClassAssessment {
 
     @ManyToOne
     @JoinColumn(name = "allocation_id")
-    private SubjectAllocation allocation; // Links to the Subject/Class
+    private SubjectAllocation allocation;
 
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;
 
-    private String examType; // "Internal", "Assignment", "Unit Test"
+    private String examType;
     private Double marksObtained;
     private Double maxMarks;
 }

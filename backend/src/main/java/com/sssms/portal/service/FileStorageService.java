@@ -19,7 +19,6 @@ public class FileStorageService {
 
     private final Path fileStorageLocation;
 
-    // Constructor injects the path from application.properties
     public FileStorageService(@Value("${file.upload-dir}") String uploadDir) {
         this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
         try {
@@ -30,7 +29,6 @@ public class FileStorageService {
     }
 
     public String storeFile(MultipartFile file) {
-        // Normalize file name and append UUID to prevent duplicates
         String originalFileName = file.getOriginalFilename();
         String fileExtension = "";
         if(originalFileName != null && originalFileName.contains(".")) {

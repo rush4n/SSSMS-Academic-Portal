@@ -25,7 +25,6 @@ public class StudentController {
     private final ResourceRepository resourceRepository;
     private final SubjectAllocationRepository allocationRepository;
     private final ExamResultRepository resultRepository;
-    // 👇 Inject the Assessment Repository
     private final ClassAssessmentRepository assessmentRepository;
 
     @GetMapping("/my-attendance")
@@ -53,11 +52,9 @@ public class StudentController {
 
         List<ClassAssessment> assessments = assessmentRepository.findByStudentId(student.getId());
 
-        // Map data to a simple structure
         List<Map<String, Object>> response = assessments.stream().map(a -> {
             Map<String, Object> map = new java.util.HashMap<>();
             map.put("id", a.getId());
-            // We get Subject Name via Allocation -> Subject
             map.put("subjectName", a.getAllocation().getSubject().getName());
             map.put("subjectCode", a.getAllocation().getSubject().getCode());
             map.put("examType", a.getExamType());

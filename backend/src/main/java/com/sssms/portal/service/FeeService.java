@@ -21,7 +21,7 @@ public class FeeService {
     private final FeeRepository feeRepository;
     private final StudentRepository studentRepository;
 
-    // 1. Initialize Fee for a Student (Usually done at start of year)
+    // 1. Initialize Fee for a Student
     public void initializeFee(Long studentId, double amount) {
         Student student = studentRepository.findById(studentId).orElseThrow();
 
@@ -48,8 +48,6 @@ public class FeeService {
 
     // 3. Get All Records (For Admin Dashboard)
     public List<Map<String, Object>> getAllFeeRecords() {
-        // If a student doesn't have a record, we should probably fetch all students and join,
-        // but for simplicity, we assume fees are initialized.
         return feeRepository.findAll().stream().map(f -> {
             Map<String, Object> map = new HashMap<>();
             map.put("studentId", f.getStudent().getId()); // User ID

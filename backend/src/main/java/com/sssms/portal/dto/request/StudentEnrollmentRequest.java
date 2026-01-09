@@ -5,11 +5,10 @@ import java.time.LocalDate;
 
 @Data
 public class StudentEnrollmentRequest {
-    // Auth Info
+
     private String email;
     private String password;
 
-    // Profile Info
     private String firstName;
     private String middleName;
     private String lastName;

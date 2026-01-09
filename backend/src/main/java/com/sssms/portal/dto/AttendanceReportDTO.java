@@ -10,7 +10,7 @@ public class AttendanceReportDTO {
     private int totalSessionsHeld;
     private String subjectName;
     private String className;
-    private String range; // "Overall" or "2025-01-01 to 2025-01-31"
+    private String range;
     private List<StudentStat> studentStats;
 
     @Data

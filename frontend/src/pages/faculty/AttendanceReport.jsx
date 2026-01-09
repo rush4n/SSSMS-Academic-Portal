@@ -32,7 +32,7 @@ const AttendanceReport = () => {
 
     useEffect(() => {
         fetchReport();
-    }, []); // Initial load (Overall)
+    }, []);
 
     return (
         <div className="max-w-5xl mx-auto">

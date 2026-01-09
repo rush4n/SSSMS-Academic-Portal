@@ -25,9 +25,9 @@ public class Notice {
     private LocalDateTime date;
 
     @Enumerated(EnumType.STRING)
-    private TargetRole targetRole; // Who sees this?
+    private TargetRole targetRole;
 
     @ManyToOne
     @JoinColumn(name = "posted_by_id")
-    private User postedBy; // Who posted it?
+    private User postedBy;
 }

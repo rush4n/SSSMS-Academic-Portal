@@ -90,7 +90,6 @@ public class AuthController {
                 response.put("name", realName);
                 return ResponseEntity.ok(response);
             } else {
-                // User not found in DB
                 ResponseCookie cleanCookie = jwtUtil.getCleanJwtCookie();
                 return ResponseEntity.status(401)
                         .header(HttpHeaders.SET_COOKIE, cleanCookie.toString())

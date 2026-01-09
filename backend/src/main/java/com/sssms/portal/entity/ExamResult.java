@@ -20,7 +20,7 @@ public class ExamResult {
     private Student student;
 
     private double sgpa;
-    private String status; // PASS, FAIL, ATKT
+    private String status;
     private LocalDate resultDate;
-    private String examSession; // e.g. "Winter 2024"
+    private String examSession;
 }

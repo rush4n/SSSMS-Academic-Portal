@@ -31,7 +31,7 @@ public class NoticeController {
         return ResponseEntity.ok(noticeService.getNoticesForUser(userDetails.getUsername()));
     }
 
-    // Post Notice (Admin or Faculty only - Handled by SecurityConfig)
+    // Post Notice (Admin or Faculty only)
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         public ResponseEntity<?> createNotice(

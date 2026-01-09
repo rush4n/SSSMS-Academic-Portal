@@ -8,8 +8,8 @@ import {
     Bell,
     LogOut,
     User,
-    Target,   // For Results
-    Calendar  // For Timetable
+    Target,
+    Calendar
 } from 'lucide-react';
 
 const FacultyLayout = () => {
@@ -24,7 +24,7 @@ const FacultyLayout = () => {
 
     const isActive = (path) => location.pathname === path;
 
-    // Updated navigation items covering all features
+    // Navigation Items
     const navItems = [
         { name: 'Dashboard', href: '/faculty/dashboard', icon: LayoutDashboard },
         { name: 'Upload Center', href: '/faculty/upload', icon: Upload }, // Sylllabus & Notes

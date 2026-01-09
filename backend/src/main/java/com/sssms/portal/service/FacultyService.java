@@ -29,11 +29,6 @@ public class FacultyService {
         SubjectAllocation allocation = allocationRepository.findById(allocationId)
                 .orElseThrow(() -> new RuntimeException("Allocation not found"));
 
-        // Find all students in that specific Class/Batch
-        // (Assuming Student has 'classBatch' link or we filter by Year/Dept)
-        // For Phase 3, we stored 'currentYear' and 'department' in Student.
-        // So we filter by that.
-
         ClassBatch batch = allocation.getClassBatch();
 
         return studentRepository.findAll().stream()
@@ -77,7 +72,7 @@ public class FacultyService {
             SubjectAllocation allocation = allocationRepository.findById(allocationId)
                     .orElseThrow(() -> new RuntimeException("Allocation not found"));
 
-            // 1. Fetch Sessions (Filtered by Date if provided)
+            // 1. Fetch Sessions
             List<AttendanceSession> sessions = sessionRepository.findAll().stream()
                     .filter(s -> s.getAllocation().getId().equals(allocationId))
                     .filter(s -> {
@@ -96,8 +91,6 @@ public class FacultyService {
             for (Student s : students) {
                 long attended = 0;
 
-                // Optimization: In a real production app, use a custom SQL Query here.
-                // For this project, Java Stream filtering is fine.
                 for (AttendanceSession session : sessions) {
                     boolean isPresent = recordRepository.findAll().stream()
                             .anyMatch(r -> r.getSession().getId().equals(session.getId())

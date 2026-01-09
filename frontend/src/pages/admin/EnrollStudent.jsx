@@ -38,7 +38,7 @@ const EnrollStudent = () => {
         lastName: "",
         email: "",
         prn: "",
-      }); // Clear main fields
+      });
     } catch (error) {
       setStatus({
         type: "error",

@@ -29,7 +29,6 @@ public class User implements UserDetails {
     private String email;
 
     @Column(nullable = false)
-    // We will map this to 'password' for Spring Security
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
@@ -37,8 +36,6 @@ public class User implements UserDetails {
     private Role role;
 
     private boolean isActive = true;
-
-    // UserDetails Implementation Methods
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

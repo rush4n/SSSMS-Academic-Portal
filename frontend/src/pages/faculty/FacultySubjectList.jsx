@@ -4,7 +4,6 @@ import api from '../../api/axiosConfig';
 import { BookOpen, ArrowRight, BarChart3, Upload, UserCheck, Target } from 'lucide-react';
 
 const FacultySubjectList = ({ mode }) => {
-    // mode can be 'attendance', 'upload', 'results', or 'report'
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();

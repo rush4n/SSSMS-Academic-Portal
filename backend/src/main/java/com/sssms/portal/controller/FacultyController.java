@@ -70,7 +70,6 @@ public class FacultyController {
             Student student = studentRepository.findById(mark.getStudentId())
                     .orElseThrow(() -> new RuntimeException("Student not found"));
 
-            // Save the mark
             ClassAssessment assessment = ClassAssessment.builder()
                     .allocation(allocation)
                     .student(student)

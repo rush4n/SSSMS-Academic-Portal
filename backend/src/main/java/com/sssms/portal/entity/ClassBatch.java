@@ -14,10 +14,10 @@ public class ClassBatch {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String batchName; // e.g. "Second Year B.Arch"
-    private String division;  // e.g. "A"
-    private int academicYear; // e.g. 2025
-    private int currentSemester; // e.g. 3
-    private String timetablePdf; // Stores filename
+    private String batchName;
+    private String division;
+    private int academicYear;
+    private int currentSemester;
+    private String timetablePdf;
     private String examSchedulePdf;
 }

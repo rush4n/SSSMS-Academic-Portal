@@ -71,7 +71,7 @@ public class StudentService {
                 String code = allocation.getSubject().getCode();
                 String name = allocation.getSubject().getName();
 
-                // Calculate stats for THIS specific allocation
+                // Calculate stats for this specific allocation
                 List<AttendanceSession> sessions = sessionRepository.findAll().stream()
                         .filter(s -> s.getAllocation().getId().equals(allocation.getId()))
                         .toList();

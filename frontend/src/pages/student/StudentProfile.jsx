@@ -23,7 +23,7 @@ const StudentProfile = () => {
     if (loading) return <div className="p-8 text-gray-500">Loading Profile...</div>;
     if (!profile) return <div className="p-8 text-red-500">Profile not found.</div>;
 
-    // Configuration for Stats Cards (Removed Credits & Progress)
+    // Configuration for Stats Cards
     const stats = [
         { label: 'Current GPA', value: profile.cgpa || 'N/A', icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
         { label: 'Attendance', value: `${profile.overallAttendance}%`, icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -58,7 +58,7 @@ const StudentProfile = () => {
                 </div>
             </div>
 
-            {/* 2. Stats Grid (Adjusted to 2 columns) */}
+            {/* 2. Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {stats.map((stat, index) => (
                     <div key={index} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center">

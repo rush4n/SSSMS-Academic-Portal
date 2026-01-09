@@ -28,7 +28,7 @@ const AdminDashboard = () => {
         return colors[color] || colors.blue;
     };
 
-    // The Main Grid (All Tools)
+    // Main Grid
     const adminCards = [
         {
             title: 'Enroll New Student',
@@ -88,7 +88,7 @@ const AdminDashboard = () => {
         },
     ];
 
-    // Priority Actions (The "Big Buttons")
+    // Priority Actions
     const quickActions = [
         {
             title: 'GPA Ledger',

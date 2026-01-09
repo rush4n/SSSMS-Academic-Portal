@@ -26,7 +26,6 @@ const FacultyResultsSubjects = () => {
                 {subjects.map((sub) => (
                     <div
                         key={sub.id}
-                        // 👇 This line is different! It sends you to the GRADING page
                         onClick={() => navigate(`/faculty/grading/${sub.id}`, { state: { subjectName: sub.subjectName, className: sub.className } })}
                         className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg cursor-pointer transition-all group"
                     >

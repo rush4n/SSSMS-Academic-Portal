@@ -22,9 +22,5 @@ public class FeeRecord {
 
     private double totalFee;
     private double paidAmount;
-
-    // Calculated field (Not in DB, handled by Logic) or Enum
-    // We will use logic: status = (paid >= total) ? "PAID" : "PENDING"
-
     private LocalDateTime lastPaymentDate;
 }

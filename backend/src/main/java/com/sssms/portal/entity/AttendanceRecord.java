@@ -25,5 +25,5 @@ public class AttendanceRecord {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AttendanceStatus status; // Enum: PRESENT, ABSENT, LATE
+    private AttendanceStatus status;
 }

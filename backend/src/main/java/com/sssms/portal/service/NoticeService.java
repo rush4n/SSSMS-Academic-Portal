@@ -26,14 +26,14 @@ public class NoticeService {
 
             String fileName = null;
             if (file != null && !file.isEmpty()) {
-                fileName = fileStorageService.storeFile(file); // Save to disk
+                fileName = fileStorageService.storeFile(file);
             }
 
             Notice notice = Notice.builder()
                     .title(title)
                     .content(content)
                     .targetRole(targetRole)
-                    .attachment(fileName) // Save filename
+                    .attachment(fileName)
                     .date(LocalDateTime.now())
                     .postedBy(user)
                     .build();
@@ -48,10 +48,8 @@ public class NoticeService {
         List<Notice> notices;
 
         if (userRole == Role.ADMIN) {
-            // Admins see everything
             notices = noticeRepository.findAllByOrderByDateDesc();
         } else {
-            // Map User Role to Target Role Enum
             TargetRole target = TargetRole.valueOf(userRole.name());
             notices = noticeRepository.findByTargetRoleOrAll(target);
         }

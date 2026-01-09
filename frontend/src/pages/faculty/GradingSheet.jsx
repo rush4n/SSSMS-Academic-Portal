@@ -60,7 +60,6 @@ const GradingSheet = () => {
             // Show Success Banner
             setStatus({ type: 'success', message: 'Marks saved successfully! Redirecting...' });
 
-            // Wait 1.5 seconds so user sees the message, then go back
             setTimeout(() => {
                 navigate('/faculty/results');
             }, 1500);

@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // 3. CRITICAL FIX: Check if jwt is not null AND not empty
+        // 3. Check if jwt is not null AND not empty
         if (jwt != null && !jwt.isEmpty()) {
             try {
                 String userEmail = jwtUtil.extractUsername(jwt);
@@ -68,7 +68,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             } catch (Exception e) {
                 // If token is expired or invalid, just ignore it and let the request proceed anonymously
-                // (Spring Security will block it later if the endpoint requires auth)
                 System.out.println("Invalid JWT processing: " + e.getMessage());
             }
         }

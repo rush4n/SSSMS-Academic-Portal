@@ -7,7 +7,7 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class StudentProfileResponse {
-    // Personal Info
+
     private String firstName;
     private String lastName;
     private String email;
@@ -18,7 +18,6 @@ public class StudentProfileResponse {
     private String address;
     private LocalDate dob;
 
-    // Stats (Calculated)
     private double overallAttendance;
-    private double cgpa; // From Exam Results
+    private double cgpa;
 }

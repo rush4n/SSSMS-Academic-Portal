@@ -12,7 +12,7 @@ const ResourceCenter = () => {
     const [title, setTitle] = useState('');
     const [uploading, setUploading] = useState(false);
 
-    // Status State for "Toast"
+    // Status State
     const [status, setStatus] = useState({ type: '', message: '' });
 
     const fetchResources = async () => {

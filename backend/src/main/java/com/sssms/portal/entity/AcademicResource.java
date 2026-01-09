@@ -16,13 +16,13 @@ public class AcademicResource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String title;      // "Unit 1 Notes"
-    private String fileName;   // "unit1_12345.pdf" (Stored on disk)
-    private String contentType; // "application/pdf"
+    private String title;
+    private String fileName;
+    private String contentType;
 
     @ManyToOne
     @JoinColumn(name = "allocation_id", nullable = false)
-    private SubjectAllocation allocation; // Links to Subject+Class
+    private SubjectAllocation allocation;
 
     private LocalDateTime uploadDate;
 }

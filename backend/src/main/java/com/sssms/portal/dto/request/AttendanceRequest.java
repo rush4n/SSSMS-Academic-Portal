@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 public class AttendanceRequest {
-    private Long allocationId; // Which Subject/Class?
+    private Long allocationId;
     private LocalDate date;
     private List<StudentStatus> students;
 

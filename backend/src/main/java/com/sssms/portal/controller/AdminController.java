@@ -68,7 +68,6 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getAllFaculty());
     }
 
-    // New Endpoints for Phase 18
     @PostMapping("/classes")
     public ResponseEntity<?> createClass(@RequestBody ClassBatch classBatch) {
         classRepository.save(classBatch);
@@ -121,10 +120,9 @@ public class AdminController {
         public ResponseEntity<?> updateStudent(@PathVariable Long id, @RequestBody StudentEnrollmentRequest request) {
             Student student = studentRepository.findById(id).orElseThrow();
 
-            // Update Editable Fields
             student.setFirstName(request.getFirstName());
             student.setLastName(request.getLastName());
-            student.setCurrentYear(request.getCurrentYear()); // Changing this re-assigns courses (logically)
+            student.setCurrentYear(request.getCurrentYear());
             student.setDepartment(request.getDepartment());
 
             studentRepository.save(student);

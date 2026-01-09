@@ -16,15 +16,15 @@ import java.time.LocalDate;
 public class Student {
 
     @Id
-    private Long id; // This will share the same ID as the User table
+    private Long id;
 
     @OneToOne
-    @MapsId // This links the PK of Student to the PK of User (Shared Primary Key)
+    @MapsId
     @JoinColumn(name = "user_id")
     private User user;
 
     @Column(unique = true, nullable = false)
-    private String prn; // Permanent Registration Number
+    private String prn;
 
     private String firstName;
     private String middleName;
@@ -33,6 +33,6 @@ public class Student {
     private LocalDate dob;
     private String phoneNumber;
     private String address;
-    private String department; // e.g., "Architecture", "Interior Design"
-    private int currentYear;   // 1, 2, 3, 4, 5
+    private String department;
+    private int currentYear;
 }

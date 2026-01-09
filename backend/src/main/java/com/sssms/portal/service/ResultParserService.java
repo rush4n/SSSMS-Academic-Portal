@@ -14,8 +14,6 @@ public class ResultParserService {
 
     public List<Map<String, Object>> parsePdf(String filePath) {
         try {
-            // Command to run Python inside the container
-            // /app/result_parser.py is where we copied it in Dockerfile
             ProcessBuilder pb = new ProcessBuilder(
                 "python3",
                 "/app/result_parser.py",

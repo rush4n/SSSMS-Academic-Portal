@@ -55,7 +55,6 @@ public class AuthService {
                 .build();
     }
 
-    // Add this method
     public UserDetails authenticateForCookie(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(

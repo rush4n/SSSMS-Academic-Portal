@@ -7,7 +7,7 @@ import {
     LogOut,
     BookOpen,
     Calendar,
-    Target, // Changed Award to Target to match Dashboard
+    Target,
     FileText,
     Clock,
     Bell
@@ -25,7 +25,7 @@ const StudentLayout = () => {
 
     const isActive = (path) => location.pathname === path;
 
-    // Updated Navigation Items
+    //Navigation Items
     const navItems = [
         { name: 'Dashboard', href: '/student/dashboard', icon: LayoutDashboard },
 

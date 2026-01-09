@@ -13,7 +13,7 @@ const AttendanceSheet = () => {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
-    // New State for the "Toast"
+    // New State
     const [status, setStatus] = useState({ type: '', message: '' });
 
     // 1. Fetch Students
@@ -67,7 +67,6 @@ const AttendanceSheet = () => {
             // Show Success Message
             setStatus({ type: 'success', message: 'Attendance Saved Successfully!' });
 
-            // Wait 1.5 seconds so user sees the message, then redirect
             setTimeout(() => {
                 navigate('/faculty/dashboard');
             }, 1500);
@@ -98,7 +97,6 @@ const AttendanceSheet = () => {
                 />
             </div>
 
-            {/* The Styled Toast / Alert Banner */}
             {status.message && (
                 <div className={`p-4 mb-6 rounded-lg flex items-center border ${
                     status.type === 'success'

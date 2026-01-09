@@ -58,13 +58,13 @@ public class ExamController {
         return ResponseEntity.ok(Map.of("exists", true, "fileName", batch.getExamSchedulePdf()));
     }
 
-    // 3. Helper: Get All Classes (For the Dropdown)
+    // 3. Helper: Get All Classes
     @GetMapping("/classes")
     public ResponseEntity<?> getAllClasses() {
         return ResponseEntity.ok(classRepository.findAll());
     }
 
-    // 4. View File (Standard)
+    // 4. View File
     @GetMapping("/view/{fileName}")
     public ResponseEntity<Resource> viewFile(@PathVariable String fileName) {
         Resource resource = fileStorageService.loadFileAsResource(fileName);

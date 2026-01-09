@@ -27,9 +27,9 @@ public class Faculty {
     private String middleName;
     private String lastName;
 
-    private String designation; // e.g., "Assistant Professor", "HOD"
+    private String designation;
     private String department;
-    private String qualification; // e.g., "M.Arch"
+    private String qualification;
     private String phoneNumber;
     private LocalDate joiningDate;
     private String timetablePdf;

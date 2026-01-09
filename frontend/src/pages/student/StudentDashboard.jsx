@@ -136,7 +136,7 @@ const StudentDashboard = () => {
                 </div>
             </div>
 
-            {/* Attendance & Subjects Section (Merged Phase 8 Logic) */}
+            {/* Attendance & Subjects Section */}
             <div className="mb-10">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-gray-900">My Academic Status</h2>

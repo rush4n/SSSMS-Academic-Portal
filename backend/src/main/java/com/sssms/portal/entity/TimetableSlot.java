@@ -18,7 +18,7 @@ public class TimetableSlot {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private DayOfWeek dayOfWeek; // MONDAY, TUESDAY...
+    private DayOfWeek dayOfWeek;
 
     private LocalTime startTime;
     private LocalTime endTime;
@@ -26,5 +26,5 @@ public class TimetableSlot {
 
     @ManyToOne
     @JoinColumn(name = "allocation_id", nullable = false)
-    private SubjectAllocation allocation; // Links Subject + Faculty + Class
+    private SubjectAllocation allocation;
 }

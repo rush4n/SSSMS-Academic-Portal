@@ -27,8 +27,6 @@ public class TimetableController {
     private final StudentRepository studentRepository;
     private final FileStorageService fileStorageService;
 
-    // --- ADMIN ENDPOINTS ---
-
     @PostMapping("/upload/class")
     public ResponseEntity<?> uploadClassTimetable(@RequestParam("classId") Long classId, @RequestParam("file") MultipartFile file) {
         String fileName = fileStorageService.storeFile(file);
@@ -47,15 +45,12 @@ public class TimetableController {
         return ResponseEntity.ok("Faculty Timetable Uploaded");
     }
 
-    // --- VIEW ENDPOINTS ---
-
     @GetMapping("/student/me")
     public ResponseEntity<?> getMyClassTimetable(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) return ResponseEntity.status(401).build();
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         Student student = studentRepository.findById(user.getUserId()).orElseThrow();
 
-        // Find class based on year (Simplified logic as per previous phases)
         ClassBatch batch = classRepository.findAll().stream()
                 .filter(b -> b.getCurrentSemester() == student.getCurrentYear())
                 .findFirst()
@@ -77,12 +72,9 @@ public class TimetableController {
         return ResponseEntity.ok(Map.of("exists", true, "fileName", faculty.getTimetablePdf()));
     }
 
-    // --- DOWNLOADER ---
-
     @GetMapping("/view/{fileName}")
     public ResponseEntity<Resource> viewFile(@PathVariable String fileName) {
         Resource resource = fileStorageService.loadFileAsResource(fileName);
-        // Inline means "Open in browser" instead of "Download immediately"
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
