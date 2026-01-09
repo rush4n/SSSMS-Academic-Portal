@@ -8,14 +8,14 @@ import {
     Book,
     UserCheck,
     Bell,
-    Clock
+    Clock,
+    BarChart3
 } from 'lucide-react';
 
 const FacultyDashboard = () => {
     const { user } = useAuth();
     const [latestNotice, setLatestNotice] = useState(null);
 
-    // Fetch Latest Notice
     useEffect(() => {
         const fetchNotices = async () => {
             try {
@@ -37,21 +37,21 @@ const FacultyDashboard = () => {
             subtitle: 'Record daily student attendance',
             icon: UserCheck,
             color: 'blue',
-            href: '/faculty/attendance' // Goes to Subject List
+            href: '/faculty/attendance'
         },
         {
             title: 'Upload Study Materials',
             subtitle: 'Share notes and PDFs with students',
             icon: Book,
             color: 'purple',
-            href: '/faculty/upload' // Goes to Subject List
+            href: '/faculty/upload'
         },
         {
             title: 'Upload Results',
             subtitle: 'Enter internal assessment marks',
             icon: Target,
             color: 'green',
-            href: '/faculty/results' // Goes to Subject List (Results Mode)
+            href: '/faculty/results'
         },
         {
             title: 'Post Notices',
@@ -73,6 +73,14 @@ const FacultyDashboard = () => {
             icon: Calendar,
             color: 'blue',
             href: '/faculty/exam-schedule'
+        },
+
+        {
+            title: 'Attendance Reports',
+            subtitle: 'View detailed attendance analytics',
+            icon: BarChart3,
+            color: 'indigo',
+            href: '/faculty/reports'
         },
     ];
 

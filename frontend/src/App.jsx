@@ -33,6 +33,7 @@ import FacultySubjectList from './pages/faculty/FacultySubjectList';
 import FacultyResultsSubjects from './pages/faculty/FacultyResultsSubjects';
 import GradingSheet from './pages/faculty/GradingSheet';
 import FacultyTimetable from "./pages/faculty/FacultyTimetable";
+import AttendanceReport from './pages/faculty/AttendanceReport';
 
 import NoticesPage from './pages/common/NoticesPage';
 import UploadExamSchedule from './pages/common/UploadExamSchedule';
@@ -93,6 +94,9 @@ function App() {
 
                 <Route path="timetable" element={<FacultyTimetable />} />
                 <Route path="exam-schedule" element={<UploadExamSchedule />} />
+
+                <Route path="reports" element={<FacultySubjectList mode="report" />} />
+                <Route path="report/:id" element={<AttendanceReport />} />
 
               </Route>
             </Route>

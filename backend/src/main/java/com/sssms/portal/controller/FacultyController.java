@@ -6,6 +6,7 @@ import com.sssms.portal.service.FacultyService;
 import com.sssms.portal.dto.request.AssessmentSubmissionRequest;
 import com.sssms.portal.dto.request.StudentMarkDTO;
 import com.sssms.portal.dto.request.AttendanceRequest;
+import com.sssms.portal.dto.AttendanceReportDTO;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/faculty")
@@ -82,4 +84,16 @@ public class FacultyController {
 
         return ResponseEntity.ok("Marks saved successfully");
     }
+
+    @GetMapping("/report/{allocationId}")
+        public ResponseEntity<?> getAttendanceReport(
+                @PathVariable Long allocationId,
+                @RequestParam(required = false) String startDate,
+                @RequestParam(required = false) String endDate
+        ) {
+            LocalDate start = (startDate != null && !startDate.isEmpty()) ? LocalDate.parse(startDate) : null;
+            LocalDate end = (endDate != null && !endDate.isEmpty()) ? LocalDate.parse(endDate) : null;
+
+            return ResponseEntity.ok(facultyService.getAttendanceReport(allocationId, start, end));
+        }
 }

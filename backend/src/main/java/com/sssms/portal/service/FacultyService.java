@@ -10,6 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.sssms.portal.dto.AttendanceReportDTO;
+import java.time.LocalDate;
+import java.util.ArrayList;
+
+
 @Service
 @RequiredArgsConstructor
 public class FacultyService {
@@ -67,4 +72,56 @@ public class FacultyService {
 
         return "Attendance Marked Successfully";
     }
+
+    public AttendanceReportDTO getAttendanceReport(Long allocationId, LocalDate startDate, LocalDate endDate) {
+            SubjectAllocation allocation = allocationRepository.findById(allocationId)
+                    .orElseThrow(() -> new RuntimeException("Allocation not found"));
+
+            // 1. Fetch Sessions (Filtered by Date if provided)
+            List<AttendanceSession> sessions = sessionRepository.findAll().stream()
+                    .filter(s -> s.getAllocation().getId().equals(allocationId))
+                    .filter(s -> {
+                        if (startDate == null || endDate == null) return true; // Overall
+                        return !s.getDate().isBefore(startDate) && !s.getDate().isAfter(endDate);
+                    })
+                    .collect(Collectors.toList());
+
+            int totalSessions = sessions.size();
+            List<AttendanceReportDTO.StudentStat> stats = new ArrayList<>();
+
+            // 2. Get Students
+            List<Student> students = getStudentsForAllocation(allocationId);
+
+            // 3. Calculate Stats per Student
+            for (Student s : students) {
+                long attended = 0;
+
+                // Optimization: In a real production app, use a custom SQL Query here.
+                // For this project, Java Stream filtering is fine.
+                for (AttendanceSession session : sessions) {
+                    boolean isPresent = recordRepository.findAll().stream()
+                            .anyMatch(r -> r.getSession().getId().equals(session.getId())
+                                        && r.getStudent().getId().equals(s.getId())
+                                        && r.getStatus() == AttendanceStatus.PRESENT);
+                    if (isPresent) attended++;
+                }
+
+                double percent = (totalSessions == 0) ? 0 : ((double) attended / totalSessions) * 100;
+
+                stats.add(AttendanceReportDTO.StudentStat.builder()
+                        .studentName(s.getFirstName() + " " + s.getLastName())
+                        .prn(s.getPrn())
+                        .sessionsAttended((int) attended)
+                        .percentage(Math.round(percent * 10.0) / 10.0)
+                        .build());
+            }
+
+            return AttendanceReportDTO.builder()
+                    .subjectName(allocation.getSubject().getName())
+                    .className(allocation.getClassBatch().getBatchName())
+                    .totalSessionsHeld(totalSessions)
+                    .range((startDate == null) ? "Overall" : startDate + " to " + endDate)
+                    .studentStats(stats)
+                    .build();
+        }
 }
