@@ -19,4 +19,5 @@ public class ClassBatch {
     private int academicYear; // e.g. 2025
     private int currentSemester; // e.g. 3
     private String timetablePdf; // Stores filename
+    private String examSchedulePdf;
 }

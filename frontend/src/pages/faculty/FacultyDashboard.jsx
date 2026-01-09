@@ -33,13 +33,6 @@ const FacultyDashboard = () => {
     // Configuration for the Dashboard Cards
     const uploadCenterCards = [
         {
-            title: 'Upload Exam Schedule',
-            subtitle: 'Create and upload examination timetables',
-            icon: Calendar,
-            color: 'blue',
-            href: '/faculty/notices' // Or a specific schedule route if we build it later
-        },
-        {
             title: 'Upload Results',
             subtitle: 'UploadView and publish examination results',
             icon: Target,
@@ -85,6 +78,14 @@ const FacultyDashboard = () => {
             icon: Calendar,
             color: 'blue',
             href: '/faculty/timetable' // Points to the PDF Viewer we built
+        },
+
+        {
+            title: 'Upload Exam Schedule',
+            subtitle: 'Create and upload examination timetables',
+            icon: Calendar,
+            color: 'blue',
+            href: '/faculty/exam-schedule' // <--- UPDATED LINK
         },
 
     ];

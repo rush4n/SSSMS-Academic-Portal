@@ -34,6 +34,7 @@ const AdminDashboard = () => {
         { title: 'GPA Ledger', description: 'Upload university result ledgers', icon: BarChart3, href: '/admin/gpa', color: 'green' },
         { title: 'Alerts & Notifications', description: 'Create and manage system announcements', icon: AlertTriangle, href: '/admin/alerts', color: 'orange' },
         { title: 'Timetable Manager', description: 'Upload Class and Faculty schedules (PDF)', icon: Calendar, href: '/admin/manage-timetables', color: 'indigo' },
+        { title: 'Exam Schedules', description: 'Upload and publish exam timetables', icon: Calendar, href: '/admin/manage-exams', color: 'indigo' },
     ];
 
     const quickActions = [

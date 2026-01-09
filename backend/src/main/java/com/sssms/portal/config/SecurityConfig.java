@@ -69,6 +69,11 @@ public class SecurityConfig {
                 // 7. Student
                 .requestMatchers("/api/student/**").hasAuthority("ROLE_STUDENT")
 
+                // Exam Schedule Rules
+                .requestMatchers("/api/exams/view/**").permitAll() // View PDF
+                .requestMatchers(HttpMethod.GET, "/api/exams/classes").hasAnyAuthority("ROLE_ADMIN", "ROLE_FACULTY") // Dropdown
+                .requestMatchers(HttpMethod.POST, "/api/exams/upload").hasAnyAuthority("ROLE_ADMIN", "ROLE_FACULTY") // Upload
+
                 .anyRequest().authenticated()
             )
 

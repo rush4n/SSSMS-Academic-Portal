@@ -33,6 +33,7 @@ import GradingSheet from './pages/faculty/GradingSheet';
 import FacultyTimetable from "./pages/faculty/FacultyTimetable";
 
 import NoticesPage from './pages/common/NoticesPage';
+import UploadExamSchedule from './pages/common/UploadExamSchedule';
 
 // Student Pages
 import StudentLayout from './components/layout/StudentLayout';
@@ -40,6 +41,7 @@ import StudentDashboard from './pages/student/StudentDashboard';
 import StudentResources from './pages/student/StudentResources';
 import StudentResults from './pages/student/StudentResults';
 import StudentTimetable from './pages/student/StudentTimetable';
+import StudentExamSchedule from './pages/student/StudentExamSchedule';
 
 function App() {
   return (
@@ -62,6 +64,7 @@ function App() {
                 <Route path="gpa" element={<GPALedger />} />
                 <Route path="manage-faculty" element={<ManageFaculty />} />
                 <Route path="manage-timetables" element={<ManageTimetables />} />
+                <Route path="manage-exams" element={<UploadExamSchedule />} />
               </Route>
             </Route>
 
@@ -84,6 +87,7 @@ function App() {
                 <Route path="grading/:allocationId" element={<GradingSheet />} />
 
                 <Route path="timetable" element={<FacultyTimetable />} />
+                <Route path="exam-schedule" element={<UploadExamSchedule />} />
 
               </Route>
             </Route>
@@ -95,6 +99,7 @@ function App() {
               <Route path="notices" element={<NoticesPage />} />
               <Route path="results" element={<StudentResults />} />
               <Route path="timetable" element={<StudentTimetable />} />
+              <Route path="exam-schedule" element={<StudentExamSchedule />} />
             </Route>
           </Routes>
         </Router>
