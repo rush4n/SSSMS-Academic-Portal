@@ -21,6 +21,7 @@ import EnrollFaculty from "./pages/admin/EnrollFaculty";
 import FeeManagement from './pages/admin/FeeManagement';
 import GPALedger from "./pages/admin/GPALedger";
 import ManageFaculty from './pages/admin/ManageFaculty';
+import ManageTimetables from './pages/admin/ManageTimetables';
 
 // Faculty Pages
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
@@ -29,6 +30,7 @@ import ResourceCenter from './pages/faculty/ResourceCenter';
 import FacultySubjectList from './pages/faculty/FacultySubjectList';
 import FacultyResultsSubjects from './pages/faculty/FacultyResultsSubjects';
 import GradingSheet from './pages/faculty/GradingSheet';
+import FacultyTimetable from "./pages/faculty/FacultyTimetable";
 
 import NoticesPage from './pages/common/NoticesPage';
 
@@ -37,6 +39,7 @@ import StudentLayout from './components/layout/StudentLayout';
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentResources from './pages/student/StudentResources';
 import StudentResults from './pages/student/StudentResults';
+import StudentTimetable from './pages/student/StudentTimetable';
 
 function App() {
   return (
@@ -58,6 +61,7 @@ function App() {
                 <Route path="fees" element={<FeeManagement />} />
                 <Route path="gpa" element={<GPALedger />} />
                 <Route path="manage-faculty" element={<ManageFaculty />} />
+                <Route path="manage-timetables" element={<ManageTimetables />} />
               </Route>
             </Route>
 
@@ -79,6 +83,8 @@ function App() {
                 <Route path="results" element={<FacultyResultsSubjects />} />
                 <Route path="grading/:allocationId" element={<GradingSheet />} />
 
+                <Route path="timetable" element={<FacultyTimetable />} />
+
               </Route>
             </Route>
 
@@ -88,8 +94,8 @@ function App() {
               <Route path="resources/:subjectCode" element={<StudentResources />} />
               <Route path="notices" element={<NoticesPage />} />
               <Route path="results" element={<StudentResults />} />
+              <Route path="timetable" element={<StudentTimetable />} />
             </Route>
-
           </Routes>
         </Router>
       </AuthProvider>

@@ -35,40 +35,46 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // Allow 'eval' for React Dev Tools
-                .headers(headers -> headers
-                        .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;")
-                        )
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+            // Allow Frames (for PDF) and Eval (for React)
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.disable())
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'self' http://localhost:5173;")
                 )
+            )
 
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                // 1. Preflight
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                .authorizeHttpRequests(auth -> auth
-                        // 1. Allow Preflight checks (OPTIONS) explicitly
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // 2. Auth Public
+                .requestMatchers("/api/auth/**").permitAll()
 
-                        // 2. Auth Endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
+                // 3. Notices
+                .requestMatchers(HttpMethod.GET, "/api/notices").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/notices").hasAnyAuthority("ROLE_ADMIN", "ROLE_FACULTY")
 
-                        // Notice Board Rules
-                            .requestMatchers(HttpMethod.GET, "/api/notices").authenticated() // Everyone can read
-                            .requestMatchers(HttpMethod.POST, "/api/notices").hasAnyAuthority("ROLE_ADMIN", "ROLE_FACULTY") // Only Admin/Faculty can post
+                // 4. Timetable Public Access (Images/PDFs)
+                .requestMatchers("/api/timetable/view/**").permitAll()
 
-                        // 3. Role Endpoints
-                        .requestMatchers("/api/admin/faculty/all").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/api/faculty/**").hasAnyAuthority("ROLE_FACULTY", "ROLE_ADMIN")
-                        .requestMatchers("/api/student/**").hasAuthority("ROLE_STUDENT")
+                // 5. Admin
+                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
 
-                        // 4. Block everything else
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                // 6. Faculty
+                .requestMatchers("/api/faculty/**").hasAnyAuthority("ROLE_FACULTY", "ROLE_ADMIN")
+
+                // 7. Student
+                .requestMatchers("/api/student/**").hasAuthority("ROLE_STUDENT")
+
+                .anyRequest().authenticated()
+            )
+
+            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -76,28 +82,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // Explicitly allow Frontend ports
         configuration.setAllowedOriginPatterns(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
-
-        // Allow all methods including OPTIONS
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // Allow Headers
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
-
-        // Allow Credentials (Cookies)
-        configuration.setAllowCredentials(true);
-
-        // Expose Set-Cookie header so browser can see it
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(List.of("Set-Cookie"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
-    // Explicit Filter Bean to ensure it loads early
     @Bean
     public CorsFilter corsFilter() {
         return new CorsFilter(corsConfigurationSource());

@@ -18,4 +18,5 @@ public class ClassBatch {
     private String division;  // e.g. "A"
     private int academicYear; // e.g. 2025
     private int currentSemester; // e.g. 3
+    private String timetablePdf; // Stores filename
 }

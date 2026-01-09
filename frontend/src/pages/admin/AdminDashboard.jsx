@@ -33,6 +33,7 @@ const AdminDashboard = () => {
         { title: 'Fee Management', description: 'Track student fee records and status', icon: Banknote, href: '/admin/fees', color: 'purple' },
         { title: 'GPA Ledger', description: 'Upload university result ledgers', icon: BarChart3, href: '/admin/gpa', color: 'green' },
         { title: 'Alerts & Notifications', description: 'Create and manage system announcements', icon: AlertTriangle, href: '/admin/alerts', color: 'orange' },
+        { title: 'Timetable Manager', description: 'Upload Class and Faculty schedules (PDF)', icon: Calendar, href: '/admin/manage-timetables', color: 'indigo' },
     ];
 
     const quickActions = [

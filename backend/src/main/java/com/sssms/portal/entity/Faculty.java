@@ -32,4 +32,5 @@ public class Faculty {
     private String qualification; // e.g., "M.Arch"
     private String phoneNumber;
     private LocalDate joiningDate;
+    private String timetablePdf;
 }

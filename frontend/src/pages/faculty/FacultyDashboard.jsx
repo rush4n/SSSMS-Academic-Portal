@@ -78,6 +78,15 @@ const FacultyDashboard = () => {
             color: 'orange',
             href: '/faculty/notices'
         },
+
+        {
+            title: 'My Timetable',
+            subtitle: 'View your weekly teaching schedule',
+            icon: Calendar,
+            color: 'blue',
+            href: '/faculty/timetable' // Points to the PDF Viewer we built
+        },
+
     ];
 
     const getColorClasses = (color) => {
