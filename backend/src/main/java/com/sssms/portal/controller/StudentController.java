@@ -45,7 +45,6 @@ public class StudentController {
         return ResponseEntity.ok(results);
     }
 
-    // 👇 NEW ENDPOINT: Fetch Internal/Unit Test Marks
     @GetMapping("/my-assessments")
     public ResponseEntity<?> getMyAssessments(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) return ResponseEntity.status(401).build();
@@ -68,6 +67,13 @@ public class StudentController {
         }).collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/profile")
+        public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
+            if (userDetails == null) return ResponseEntity.status(401).build();
+            User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+            return ResponseEntity.ok(studentService.getProfile(user.getUserId()));
     }
 
     @GetMapping("/resources/{subjectCode}")

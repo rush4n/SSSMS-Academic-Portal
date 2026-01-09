@@ -7,7 +7,7 @@ import {
     LogOut,
     BookOpen,
     Calendar,
-    Award,
+    Target, // Changed Award to Target to match Dashboard
     FileText,
     Clock,
     Bell
@@ -25,15 +25,15 @@ const StudentLayout = () => {
 
     const isActive = (path) => location.pathname === path;
 
-    // Exact navigation items from the screenshot
+    // Updated Navigation Items
     const navItems = [
         { name: 'Dashboard', href: '/student/dashboard', icon: LayoutDashboard },
+
         { name: 'My Profile', href: '/student/profile', icon: User },
-        { name: 'My Courses', href: '/student/courses', icon: BookOpen },
+
+        { name: 'Results', href: '/student/results', icon: Target },
+        { name: 'Class Timetable', href: '/student/timetable', icon: Clock },
         { name: 'Exam Schedule', href: '/student/exam-schedule', icon: Calendar },
-        { name: 'Results', href: '/student/results', icon: Award },
-        { name: 'Study Materials', href: '/student/study-materials', icon: FileText },
-        { name: 'Timetable', href: '/student/timetable', icon: Clock },
         { name: 'Notices', href: '/student/notices', icon: Bell },
     ];
 
@@ -55,15 +55,15 @@ const StudentLayout = () => {
                 {/* User Profile Section */}
                 <div className="px-6 py-6 border-b border-gray-200">
                     <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
                             <User className="w-5 h-5" />
                         </div>
                         <div className="ml-3 overflow-hidden">
                             <p className="text-sm font-semibold text-gray-900 truncate">
-                                {user?.name || user?.email || "Student"}
+                                {user?.name || "Student"}
                             </p>
                             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Architecture</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Year {user?.currentYear || '1'}</p>
                         </div>
                     </div>
                 </div>
@@ -76,11 +76,11 @@ const StudentLayout = () => {
                             to={item.href}
                             className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                                 isActive(item.href)
-                                    ? 'bg-blue-50 text-blue-700'
+                                    ? 'bg-indigo-50 text-indigo-700'
                                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                             }`}
                         >
-                            <item.icon className={`w-5 h-5 mr-3 ${isActive(item.href) ? 'text-blue-600' : 'text-gray-400'}`} />
+                            <item.icon className={`w-5 h-5 mr-3 ${isActive(item.href) ? 'text-indigo-600' : 'text-gray-400'}`} />
                             {item.name}
                         </Link>
                     ))}

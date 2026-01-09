@@ -42,6 +42,7 @@ import StudentResources from './pages/student/StudentResources';
 import StudentResults from './pages/student/StudentResults';
 import StudentTimetable from './pages/student/StudentTimetable';
 import StudentExamSchedule from './pages/student/StudentExamSchedule';
+import StudentProfile from './pages/student/StudentProfile';
 
 function App() {
   return (
@@ -100,6 +101,7 @@ function App() {
               <Route path="results" element={<StudentResults />} />
               <Route path="timetable" element={<StudentTimetable />} />
               <Route path="exam-schedule" element={<StudentExamSchedule />} />
+              <Route path="profile" element={<StudentProfile />} />
             </Route>
           </Routes>
         </Router>

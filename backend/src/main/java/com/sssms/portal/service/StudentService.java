@@ -5,6 +5,9 @@ import com.sssms.portal.entity.*;
 import com.sssms.portal.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.sssms.portal.repository.ExamResultRepository;
+import com.sssms.portal.entity.ExamResult;
+import com.sssms.portal.dto.StudentProfileResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +20,40 @@ public class StudentService {
     private final SubjectAllocationRepository allocationRepository;
     private final AttendanceSessionRepository sessionRepository;
     private final AttendanceRecordRepository recordRepository;
+    private final ExamResultRepository examResultRepository;
+
+    public StudentProfileResponse getProfile(Long userId) {
+            Student student = studentRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+
+            // 1. Calculate Overall Attendance
+            List<StudentAttendanceDTO> attendanceList = getMyAttendance(userId);
+            double avgAttendance = attendanceList.isEmpty() ? 0.0 :
+                attendanceList.stream().mapToDouble(StudentAttendanceDTO::getPercentage).average().orElse(0.0);
+
+            // 2. Fetch Real CGPA from Exam Results
+            List<ExamResult> results = examResultRepository.findByStudentId(userId);
+
+            double cgpa = 0.0;
+            if (!results.isEmpty()) {
+                double totalSgpa = results.stream().mapToDouble(ExamResult::getSgpa).sum();
+                cgpa = totalSgpa / results.size(); // Simple Average of all SGPA records
+            }
+
+            return StudentProfileResponse.builder()
+                    .firstName(student.getFirstName())
+                    .lastName(student.getLastName())
+                    .email(student.getUser().getEmail())
+                    .prn(student.getPrn())
+                    .department(student.getDepartment())
+                    .currentYear(student.getCurrentYear())
+                    .phoneNumber(student.getPhoneNumber())
+                    .address(student.getAddress())
+                    .dob(student.getDob())
+                    .overallAttendance(Math.round(avgAttendance * 10.0) / 10.0)
+                    .cgpa(Math.round(cgpa * 100.0) / 100.0) // Round to 2 decimals
+                    .build();
+        }
 
     public List<StudentAttendanceDTO> getMyAttendance(Long userId) {
             Student student = studentRepository.findById(userId)

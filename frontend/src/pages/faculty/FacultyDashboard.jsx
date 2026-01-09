@@ -6,9 +6,9 @@ import {
     Calendar,
     Target,
     Book,
-    FileText,
     UserCheck,
-    Bell
+    Bell,
+    Clock
 } from 'lucide-react';
 
 const FacultyDashboard = () => {
@@ -31,63 +31,49 @@ const FacultyDashboard = () => {
     }, []);
 
     // Configuration for the Dashboard Cards
-    const uploadCenterCards = [
+    const quickActions = [
         {
-            title: 'Upload Results',
-            subtitle: 'UploadView and publish examination results',
-            icon: Target,
-            color: 'green',
-            href: '/faculty/results' // Placeholder
+            title: 'Manage Attendance',
+            subtitle: 'Record daily student attendance',
+            icon: UserCheck,
+            color: 'blue',
+            href: '/faculty/attendance' // Goes to Subject List
         },
         {
             title: 'Upload Study Materials',
-            subtitle: 'Share lecture notes and resources',
+            subtitle: 'Share notes and PDFs with students',
             icon: Book,
             color: 'purple',
-            // Link to the Subject List for Uploads
-            href: '/faculty/upload'
+            href: '/faculty/upload' // Goes to Subject List
         },
         {
-            title: 'View Courses & Syllabus',
-            subtitle: 'UploadView course information and syllabus',
-            icon: FileText,
-            color: 'indigo',
-            // Reuse the Upload logic for Syllabus too
-            href: '/faculty/upload'
-        },
-        {
-            title: 'Manage Attendance',
-            subtitle: 'Record and manage student attendance',
-            icon: UserCheck,
-            color: 'blue',
-            // Link to Subject List for Attendance
-            href: '/faculty/attendance'
+            title: 'Upload Results',
+            subtitle: 'Enter internal assessment marks',
+            icon: Target,
+            color: 'green',
+            href: '/faculty/results' // Goes to Subject List (Results Mode)
         },
         {
             title: 'Post Notices',
-            subtitle: 'Create announcements for students',
+            subtitle: 'Create class announcements',
             icon: Bell,
-            count: '4',
             color: 'orange',
             href: '/faculty/notices'
         },
-
         {
             title: 'My Timetable',
-            subtitle: 'View your weekly teaching schedule',
-            icon: Calendar,
-            color: 'blue',
-            href: '/faculty/timetable' // Points to the PDF Viewer we built
+            subtitle: 'View your weekly schedule',
+            icon: Clock,
+            color: 'indigo',
+            href: '/faculty/timetable'
         },
-
         {
-            title: 'Upload Exam Schedule',
-            subtitle: 'Create and upload examination timetables',
+            title: 'Exam Schedule',
+            subtitle: 'Upload class exam timetables',
             icon: Calendar,
             color: 'blue',
-            href: '/faculty/exam-schedule' // <--- UPDATED LINK
+            href: '/faculty/exam-schedule'
         },
-
     ];
 
     const getColorClasses = (color) => {
@@ -106,19 +92,19 @@ const FacultyDashboard = () => {
 
             {/* Header */}
             <div className="mb-10">
-                <h1 className="text-3xl font-bold text-blue-600 mb-2">
-                    Welcome, {user?.name || user?.email?.split('@')[0] || "Professor"}
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    Welcome, {user?.name || "Professor"}
                 </h1>
                 <p className="text-gray-600">
-                    Architecture Design | Faculty Portal
+                    Faculty Portal | Architecture Department
                 </p>
             </div>
 
-            {/* Upload Center Grid */}
+            {/* Quick Actions Grid */}
             <div className="mb-10">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Upload Center</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {uploadCenterCards.map((card, index) => {
+                    {quickActions.map((card, index) => {
                         const Icon = card.icon;
                         return (
                             <Link
@@ -130,11 +116,6 @@ const FacultyDashboard = () => {
                                     <div className={`p-3 rounded-lg ${getColorClasses(card.color)}`}>
                                         <Icon className="w-6 h-6" />
                                     </div>
-                                    {card.count && (
-                                        <span className="text-2xl font-bold text-blue-600 group-hover:scale-110 transition-transform">
-                      {card.count}
-                    </span>
-                                    )}
                                 </div>
                                 <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
                                     {card.title}

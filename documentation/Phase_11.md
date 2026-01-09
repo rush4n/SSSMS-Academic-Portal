@@ -54,7 +54,7 @@ Phase 11 involved complex "Cross-Language" debugging.
 
 ## 5. Final System Status Checklist
 
-With Phase 11 complete, the SSSMS Portal is now **Feature Complete** according to the SRS.
+With Phase 11 complete, the SSSMS Portal now has these features according to the SRS.
 
 | Pillar | Features | Status |
 | :--- | :--- |:-------|

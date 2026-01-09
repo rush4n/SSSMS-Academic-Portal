@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
 import { useAuth } from '../../auth/useAuth';
 import {
@@ -8,35 +8,53 @@ import {
     Book,
     FileText,
     Clock,
-    Bell
+    Bell,
+    CheckCircle,
+    TrendingUp,
+    TrendingDown
 } from 'lucide-react';
 
 const StudentDashboard = () => {
     const { user } = useAuth();
-    const [latestNotice, setLatestNotice] = useState(null);
+    const navigate = useNavigate();
 
-    // Fetch the latest notice for the bottom section
+    const [latestNotice, setLatestNotice] = useState(null);
+    const [attendanceReport, setAttendanceReport] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
-        const fetchNotices = async () => {
+        const fetchData = async () => {
             try {
-                const response = await api.get('/notices');
-                if (response.data && response.data.length > 0) {
-                    setLatestNotice(response.data[0]); // Get the newest one
+                // 1. Fetch Notices
+                const noticeRes = await api.get('/notices');
+                if (noticeRes.data && noticeRes.data.length > 0) {
+                    setLatestNotice(noticeRes.data[0]);
                 }
+
+                // 2. Fetch Attendance & Subjects (From Phase 6/8)
+                const attRes = await api.get('/student/my-attendance');
+                setAttendanceReport(attRes.data);
+
             } catch (error) {
-                console.error("Failed to load notices");
+                console.error("Failed to load dashboard data", error);
+            } finally {
+                setLoading(false);
             }
         };
-        fetchNotices();
+        fetchData();
     }, []);
 
-    // Configuration for the Quick Access Cards
+    // Calculate Overall Attendance
+    const overallPercentage = attendanceReport.length > 0
+        ? Math.round(attendanceReport.reduce((acc, curr) => acc + curr.percentage, 0) / attendanceReport.length)
+        : 0;
+
+    // Quick Access Configuration
     const quickAccessCards = [
         {
             title: 'Exam Schedule',
             subtitle: 'View upcoming examinations',
             icon: Calendar,
-            count: '2',
             color: 'blue',
             href: '/student/exam-schedule'
         },
@@ -44,43 +62,25 @@ const StudentDashboard = () => {
             title: 'Results',
             subtitle: 'Check your examination results',
             icon: Target,
-            count: '1',
             color: 'green',
             href: '/student/results'
         },
         {
-            title: 'Study Materials',
-            subtitle: 'Access lecture notes and resources',
-            icon: Book,
-            count: '5',
-            color: 'purple',
-            href: '/student/study-materials' // Or link to attendance view for now
-        },
-        {
-            title: 'Courses View & Syllabus',
-            subtitle: 'Browse course information',
-            icon: FileText,
-            color: 'indigo',
-            href: '/student/courses'
-        },
-        {
-            title: 'Timetable',
-            subtitle: 'View your weekly class schedule',
+            title: 'Class Timetable',
+            subtitle: 'View your weekly schedule',
             icon: Clock,
-            color: 'blue',
+            color: 'indigo',
             href: '/student/timetable'
         },
         {
             title: 'Notice Board',
             subtitle: 'Check the latest announcements',
             icon: Bell,
-            count: '4',
             color: 'orange',
             href: '/student/notices'
         },
     ];
 
-    // Helper for dynamic colors
     const getColorClasses = (color) => {
         const colors = {
             blue: 'bg-blue-50 text-blue-600',
@@ -92,23 +92,25 @@ const StudentDashboard = () => {
         return colors[color] || colors.blue;
     };
 
+    if (loading) return <div className="p-8 text-gray-500">Loading Dashboard...</div>;
+
     return (
         <div className="max-w-7xl mx-auto">
 
-            {/* Header Section */}
+            {/* Header */}
             <div className="mb-10">
-                <h1 className="text-3xl font-bold text-blue-600 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
                     Welcome, {user?.name || user?.email?.split('@')[0] || "Student"}
                 </h1>
                 <p className="text-gray-600">
-                    Architecture | Semester {user?.currentYear || '3'} | Year {user?.currentYear || '3'}
+                    Architecture | Semester {user?.currentYear || '1'} | Year {user?.currentYear || '1'}
                 </p>
             </div>
 
-            {/* Quick Access Section */}
+            {/* Quick Access Grid */}
             <div className="mb-10">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Access</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {quickAccessCards.map((card, index) => {
                         const Icon = card.icon;
                         return (
@@ -121,16 +123,11 @@ const StudentDashboard = () => {
                                     <div className={`p-3 rounded-lg ${getColorClasses(card.color)}`}>
                                         <Icon className="w-6 h-6" />
                                     </div>
-                                    {card.count && (
-                                        <span className="text-2xl font-bold text-blue-600 group-hover:scale-110 transition-transform">
-                      {card.count}
-                    </span>
-                                    )}
                                 </div>
                                 <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
                                     {card.title}
                                 </h3>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500 leading-relaxed">
                                     {card.subtitle}
                                 </p>
                             </Link>
@@ -139,10 +136,68 @@ const StudentDashboard = () => {
                 </div>
             </div>
 
-            {/* Recent Notices Section */}
+            {/* Attendance & Subjects Section (Merged Phase 8 Logic) */}
+            <div className="mb-10">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-gray-900">My Academic Status</h2>
+                    <div className="flex items-center bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
+                        <span className="text-gray-500 text-sm mr-2">Overall Attendance:</span>
+                        <span className={`font-bold ${overallPercentage >= 75 ? 'text-green-600' : 'text-red-600'}`}>
+                    {overallPercentage}%
+                </span>
+                    </div>
+                </div>
+
+                {attendanceReport.length === 0 ? (
+                    <div className="bg-white p-8 rounded-xl border border-gray-200 text-center text-gray-500">
+                        No subjects assigned to your class yet.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {attendanceReport.map((item, index) => (
+                            <div key={index} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="flex justify-between mb-4">
+                                    <span className="bg-gray-100 text-xs px-2 py-1 rounded font-mono text-gray-600">{item.subjectCode}</span>
+                                    <span className={`text-sm font-bold flex items-center ${item.percentage >= 75 ? 'text-green-600' : 'text-red-600'}`}>
+                                {item.percentage >= 75 ? <TrendingUp className="w-4 h-4 mr-1"/> : <TrendingDown className="w-4 h-4 mr-1"/>}
+                                        {item.percentage}%
+                            </span>
+                                </div>
+
+                                <h4 className="font-bold text-gray-900 mb-2">{item.subjectName}</h4>
+
+                                <div className="text-sm text-gray-500 space-y-1 mb-4">
+                                    <div className="flex justify-between"><span>Lectures Held:</span> <span>{item.totalSessions}</span></div>
+                                    <div className="flex justify-between"><span>You Attended:</span> <span>{item.attendedSessions}</span></div>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
+                                    <div
+                                        className={`h-2 rounded-full ${item.percentage >= 75 ? 'bg-green-500' : 'bg-red-500'}`}
+                                        style={{ width: `${item.percentage}%` }}
+                                    ></div>
+                                </div>
+
+                                {/* View Materials Button */}
+                                <div className="border-t border-gray-100 pt-4">
+                                    <button
+                                        onClick={() => navigate(`/student/resources/${item.subjectCode}`)}
+                                        className="w-full text-blue-600 font-medium text-sm hover:bg-blue-50 py-2.5 rounded-lg transition-colors flex items-center justify-center"
+                                    >
+                                        <Book className="w-4 h-4 mr-2" /> Study Materials
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Recent Notices */}
             <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Notices</h2>
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                     {latestNotice ? (
                         <div className="flex items-start">
                             <div className="p-2 bg-yellow-50 text-yellow-600 rounded-lg mr-4 mt-1">

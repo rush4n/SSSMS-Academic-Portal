@@ -7,7 +7,9 @@ import {
     UserCheck,
     Bell,
     LogOut,
-    User
+    User,
+    Target,   // For Results
+    Calendar  // For Timetable
 } from 'lucide-react';
 
 const FacultyLayout = () => {
@@ -22,11 +24,13 @@ const FacultyLayout = () => {
 
     const isActive = (path) => location.pathname === path;
 
-    // Exact navigation items from the "Dr. John Sturgis" screenshot
+    // Updated navigation items covering all features
     const navItems = [
         { name: 'Dashboard', href: '/faculty/dashboard', icon: LayoutDashboard },
-        { name: 'Upload Center', href: '/faculty/upload', icon: Upload }, // Generic upload landing
-        { name: 'Attendance', href: '/faculty/attendance', icon: UserCheck }, // Links to subject list
+        { name: 'Upload Center', href: '/faculty/upload', icon: Upload }, // Sylllabus & Notes
+        { name: 'Attendance', href: '/faculty/attendance', icon: UserCheck },
+        { name: 'Results & Grading', href: '/faculty/results', icon: Target }, // Internal Marks
+        { name: 'My Timetable', href: '/faculty/timetable', icon: Calendar }, // PDF View
         { name: 'Notices', href: '/faculty/notices', icon: Bell },
     ];
 
@@ -48,7 +52,7 @@ const FacultyLayout = () => {
                 {/* User Profile Section */}
                 <div className="px-6 py-6 border-b border-gray-200">
                     <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
                             <User className="w-5 h-5" />
                         </div>
                         <div className="ml-3 overflow-hidden">
@@ -56,7 +60,7 @@ const FacultyLayout = () => {
                                 {user?.name || user?.email?.split('@')[0] || "Faculty"}
                             </p>
                             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Architecture Design</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Architecture Dept</p>
                         </div>
                     </div>
                 </div>
@@ -69,11 +73,11 @@ const FacultyLayout = () => {
                             to={item.href}
                             className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                                 isActive(item.href)
-                                    ? 'bg-blue-50 text-blue-700'
+                                    ? 'bg-purple-50 text-purple-700'
                                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                             }`}
                         >
-                            <item.icon className={`w-5 h-5 mr-3 ${isActive(item.href) ? 'text-blue-600' : 'text-gray-400'}`} />
+                            <item.icon className={`w-5 h-5 mr-3 ${isActive(item.href) ? 'text-purple-600' : 'text-gray-400'}`} />
                             {item.name}
                         </Link>
                     ))}

@@ -7,9 +7,8 @@ import {
     BarChart3,
     AlertTriangle,
     UserPlus,
-    FileText,
     Calendar,
-    BookOpen
+    Briefcase
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -17,30 +16,100 @@ const AdminDashboard = () => {
 
     // Helper to handle dynamic colors
     const getColorClasses = (color) => {
-        switch (color) {
-            case 'blue': return 'bg-blue-50 text-blue-600';
-            case 'green': return 'bg-green-50 text-green-600';
-            case 'purple': return 'bg-purple-50 text-purple-600';
-            case 'orange': return 'bg-orange-50 text-orange-600';
-            case 'indigo': return 'bg-indigo-50 text-indigo-600';
-            default: return 'bg-gray-50 text-gray-600';
-        }
+        const colors = {
+            blue: 'bg-blue-50 text-blue-600',
+            green: 'bg-green-50 text-green-600',
+            purple: 'bg-purple-50 text-purple-600',
+            indigo: 'bg-indigo-50 text-indigo-600',
+            orange: 'bg-orange-50 text-orange-600',
+            red: 'bg-red-50 text-red-600',
+        };
+        return colors[color] || colors.blue;
     };
 
+    // The Main Grid (All Tools)
     const adminCards = [
-        { title: 'Student Management', description: 'Add, edit, and manage student profiles', icon: UserPlus, href: '/admin/enroll-student', color: 'indigo' },
-        { title: 'Faculty Management', description: 'Add, edit, and manage faculty profiles', icon: Users, href: '/admin/add-faculty', color: 'blue' },
-        { title: 'Fee Management', description: 'Track student fee records and status', icon: Banknote, href: '/admin/fees', color: 'purple' },
-        { title: 'GPA Ledger', description: 'Upload university result ledgers', icon: BarChart3, href: '/admin/gpa', color: 'green' },
-        { title: 'Alerts & Notifications', description: 'Create and manage system announcements', icon: AlertTriangle, href: '/admin/alerts', color: 'orange' },
-        { title: 'Timetable Manager', description: 'Upload Class and Faculty schedules (PDF)', icon: Calendar, href: '/admin/manage-timetables', color: 'indigo' },
-        { title: 'Exam Schedules', description: 'Upload and publish exam timetables', icon: Calendar, href: '/admin/manage-exams', color: 'indigo' },
+        {
+            title: 'Student Management',
+            description: 'Enroll new students & manage profiles',
+            icon: UserPlus,
+            href: '/admin/enroll-student',
+            color: 'indigo'
+        },
+        {
+            title: 'Faculty Management',
+            description: 'Onboard teaching staff & HODs',
+            icon: Users,
+            href: '/admin/add-faculty',
+            color: 'blue'
+        },
+        {
+            title: 'Workload & Allocation',
+            description: 'Assign subjects to faculty members',
+            icon: Briefcase,
+            href: '/admin/manage-faculty',
+            color: 'blue'
+        },
+        {
+            title: 'Fee Management',
+            description: 'Track payment status & dues',
+            icon: Banknote,
+            href: '/admin/fees',
+            color: 'purple'
+        },
+        {
+            title: 'GPA Ledger',
+            description: 'Process university result PDFs',
+            icon: BarChart3,
+            href: '/admin/gpa',
+            color: 'green'
+        },
+        {
+            title: 'Timetable Manager',
+            description: 'Upload Weekly Class Schedules',
+            icon: Calendar,
+            href: '/admin/manage-timetables',
+            color: 'indigo'
+        },
+        {
+            title: 'Exam Schedules',
+            description: 'Publish Exam Time Tables',
+            icon: Calendar,
+            href: '/admin/manage-exams',
+            color: 'purple'
+        },
+        {
+            title: 'Notices & Alerts',
+            description: 'Broadcast system announcements',
+            icon: AlertTriangle,
+            href: '/admin/notices',
+            color: 'orange'
+        },
     ];
 
+    // Priority Actions (The "Big Buttons")
     const quickActions = [
-        { title: 'Enroll New Student', description: 'Register a new student instantly', icon: UserPlus, href: '/admin/enroll-student', color: 'indigo' },
-        { title: 'Enroll New Faculty', description: 'Register a new faculty instantly', icon: UserPlus, href: '/admin/add-faculty', color: 'blue' },
-        { title: 'Manage Timetables', description: 'Update academic schedules', icon: Calendar, href: '/admin/timetables', color: 'purple' },
+        {
+            title: 'Enroll Student',
+            description: 'Register a new admission',
+            icon: UserPlus,
+            href: '/admin/enroll-student',
+            color: 'indigo'
+        },
+        {
+            title: 'Record Fee Payment',
+            description: 'Update ledger for a student',
+            icon: Banknote,
+            href: '/admin/fees',
+            color: 'purple'
+        },
+        {
+            title: 'Post New Notice',
+            description: 'Send an alert to everyone',
+            icon: AlertTriangle,
+            href: '/admin/notices',
+            color: 'orange'
+        },
     ];
 
     return (
@@ -56,12 +125,12 @@ const AdminDashboard = () => {
                     <span className="mx-2">|</span>
                     <span>Portal Manager</span>
                     <span className="ml-3 px-2.5 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-            Admin
-          </span>
+                        Admin
+                    </span>
                 </div>
             </div>
 
-            {/* Admin Panel Section */}
+            {/* Admin Panel Section (Grid) */}
             <div className="mb-10">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Admin Panel</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -88,7 +157,7 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            {/* Quick Actions / Upload Center Style */}
+            {/* Quick Actions (Row) */}
             <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -13,7 +13,9 @@ import {
   LogOut,
   User,
   UserPlus,
-  Banknote
+  Banknote,
+  Briefcase,
+  Calendar
 } from 'lucide-react';
 
 const AdminLayout = () => {
@@ -28,31 +30,39 @@ const AdminLayout = () => {
 
   const isActive = (path) => location.pathname === path;
 
-  // Navigation Items matching the screenshot structure
+  // Main Navigation (Top Section)
   const mainNav = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Upload Center', href: '/admin/upload', icon: Upload }, // Placeholder if needed
-    { name: 'Attendance', href: '/admin/attendance', icon: UserCheck }, // Placeholder if needed
     { name: 'Notices', href: '/admin/notices', icon: Bell },
+    // { name: 'Upload Center', href: '/admin/upload', icon: Upload }, // Add later if Admin needs to upload syllabus
+    // { name: 'Attendance', href: '/admin/attendance', icon: UserCheck }, // Add later if Admin needs to view logs
   ];
 
+  // Admin Tools (Bottom Section)
   const adminTools = [
+    // People
+    { name: 'Enroll Student', href: '/admin/enroll-student', icon: UserPlus },
+    { name: 'Add Faculty', href: '/admin/add-faculty', icon: UserPlus },
+    { name: 'Manage Workload', href: '/admin/manage-faculty', icon: Briefcase }, // Allocation
+
+    // Operations
+    { name: 'Fee Management', href: '/admin/fees', icon: Banknote },
+    { name: 'Exam Schedules', href: '/admin/manage-exams', icon: Calendar }, // New Feature
     { name: 'GPA Ledger', href: '/admin/gpa', icon: BarChart3 },
-    { name: 'Student Management', href: '/admin/enroll-student', icon: UserPlus },
-    { name: "Faculty Management", href: "/admin/add-faculty", icon: Users },
-    { name: 'Fee Management', href: '/admin/fees', icon: FileText },
-    { name: 'Alerts & Notifications', href: '/admin/alerts', icon: AlertTriangle },
-    { name: "Manage Faculty", href: "/admin/manage-faculty", icon: Users, disabled: false },
+
+    // System
+    // { name: 'Alerts', href: '/admin/alerts', icon: AlertTriangle }, // Merged with Notices usually
   ];
 
   return (
       <div className="flex h-screen bg-gray-50 font-sans">
 
-        {/* Sidebar Container */}
+        {/* Sidebar */}
         <div className="w-64 bg-white border-r border-gray-200 flex flex-col fixed inset-y-0 z-50">
 
-          {/* 1. Logo Section */}
+          {/* Logo Section */}
           <div className="h-16 flex items-center px-6 border-b border-gray-200">
+            {/* Ensure image path matches your public folder */}
             <img src="/sssms-logo.png" alt="SSSMS Logo" className="w-8 h-8 object-contain mr-3" />
             <div>
               <h1 className="text-lg font-bold text-gray-900 leading-tight">SSSMS</h1>
@@ -60,7 +70,7 @@ const AdminLayout = () => {
             </div>
           </div>
 
-          {/* 2. User Profile Section */}
+          {/* User Profile */}
           <div className="px-6 py-6 border-b border-gray-200">
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
@@ -76,7 +86,7 @@ const AdminLayout = () => {
             </div>
           </div>
 
-          {/* 3. Navigation Links */}
+          {/* Navigation Links */}
           <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
 
             {/* Main Group */}
@@ -95,10 +105,10 @@ const AdminLayout = () => {
                 </Link>
             ))}
 
-            {/* Admin Tools Header */}
+            {/* Header */}
             <div className="pt-6 pb-2 px-3">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Admin Tools
+                Management Tools
               </p>
             </div>
 
@@ -119,7 +129,7 @@ const AdminLayout = () => {
             ))}
           </nav>
 
-          {/* 4. Logout Section */}
+          {/* Logout */}
           <div className="p-4 border-t border-gray-200">
             <button
                 onClick={handleLogout}
@@ -131,7 +141,7 @@ const AdminLayout = () => {
           </div>
         </div>
 
-        {/* Main Content Wrapper (Offset for fixed sidebar) */}
+        {/* Content Area */}
         <div className="flex-1 flex flex-col ml-64 overflow-hidden">
           <main className="flex-1 overflow-y-auto p-8">
             <Outlet />

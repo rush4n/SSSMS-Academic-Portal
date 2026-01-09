@@ -3,9 +3,12 @@ package com.sssms.portal.controller;
 import com.sssms.portal.config.JwtUtil;
 import com.sssms.portal.dto.AuthenticationRequest;
 import com.sssms.portal.dto.RegisterRequest;
-import com.sssms.portal.service.AuthService;
+import com.sssms.portal.entity.Role;
 import com.sssms.portal.entity.User;
-import com.sssms.portal.repository.UserRepository; // Temporary direct access for /me
+import com.sssms.portal.repository.FacultyRepository;
+import com.sssms.portal.repository.StudentRepository;
+import com.sssms.portal.repository.UserRepository;
+import com.sssms.portal.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -14,33 +17,33 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class AuthController {
 
     private final AuthService service;
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository; // To fetch full user details
+    private final UserRepository userRepository;
+
+    // Inject Profile Repositories to fetch Names
+    private final FacultyRepository facultyRepository;
+    private final StudentRepository studentRepository;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        // We ignore the returned token from service for now, just register
         service.register(request);
         return ResponseEntity.ok("User registered successfully");
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthenticationRequest request) {
-        // 1. Authenticate (This validates password)
         UserDetails userDetails = service.authenticateForCookie(request);
-
-        // 2. Generate Cookie
         ResponseCookie jwtCookie = jwtUtil.generateJwtCookie(userDetails);
-
-        // 3. Return response with Set-Cookie Header
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .body("Login successful");
@@ -54,21 +57,44 @@ public class AuthController {
                 .body("You've been signed out!");
     }
 
-    // React calls this on page load to check if logged in
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
-        // 1. Guard Clause: If no user, return 401 instead of crashing
-        if (userDetails == null) {
-            return ResponseEntity.status(401).body("Not authenticated");
+        public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+            if (userDetails == null) {
+                return ResponseEntity.status(401).body("Not authenticated");
+            }
+
+            // 1. Fetch User Base Data
+            var userOptional = userRepository.findByEmail(userDetails.getUsername());
+
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                Map<String, String> response = new HashMap<>();
+                response.put("email", user.getEmail());
+                response.put("role", "ROLE_" + user.getRole().name());
+
+                // 2. Fetch Real Name based on Role
+                String realName = user.getEmail(); // Default fallback
+
+                if (user.getRole() == Role.FACULTY) {
+                    realName = facultyRepository.findById(user.getUserId())
+                            .map(f -> f.getFirstName() + " " + f.getLastName())
+                            .orElse("Faculty Member");
+                } else if (user.getRole() == Role.STUDENT) {
+                    realName = studentRepository.findById(user.getUserId())
+                            .map(s -> s.getFirstName() + " " + s.getLastName())
+                            .orElse("Student");
+                } else if (user.getRole() == Role.ADMIN) {
+                    realName = "Administrator";
+                }
+
+                response.put("name", realName);
+                return ResponseEntity.ok(response);
+            } else {
+                // User not found in DB
+                ResponseCookie cleanCookie = jwtUtil.getCleanJwtCookie();
+                return ResponseEntity.status(401)
+                        .header(HttpHeaders.SET_COOKIE, cleanCookie.toString())
+                        .body("User not found");
+            }
         }
-
-        // 2. Safe to proceed
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-
-        return ResponseEntity.ok(Map.of(
-                "email", user.getEmail(),
-                "role", "ROLE_" + user.getRole().name(),
-                "name", user.getEmail() // Placeholder for name
-        ));
-    }
 }
