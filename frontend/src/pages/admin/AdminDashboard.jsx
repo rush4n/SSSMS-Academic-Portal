@@ -8,6 +8,7 @@ import {
     AlertTriangle,
     UserPlus,
     Calendar,
+    BookOpen,
     Briefcase
 } from 'lucide-react';
 
@@ -30,32 +31,39 @@ const AdminDashboard = () => {
     // The Main Grid (All Tools)
     const adminCards = [
         {
-            title: 'Student Management',
-            description: 'Enroll new students & manage profiles',
+            title: 'Enroll New Student',
+            description: 'Register a new admission',
             icon: UserPlus,
             href: '/admin/enroll-student',
+            color: 'green'
+        },
+        {
+            title: 'Student Management',
+            description: 'View directory & manage enrollments',
+            icon: Users,
+            href: '/admin/manage-students',
             color: 'indigo'
         },
         {
-            title: 'Faculty Management',
+            title: 'Enroll New Faculty',
             description: 'Onboard teaching staff & HODs',
-            icon: Users,
+            icon: UserPlus,
             href: '/admin/add-faculty',
             color: 'blue'
         },
         {
-            title: 'Workload & Allocation',
+            title: 'Faculty Management',
             description: 'Assign subjects to faculty members',
             icon: Briefcase,
             href: '/admin/manage-faculty',
-            color: 'blue'
+            color: 'indigo'
         },
         {
-            title: 'Fee Management',
-            description: 'Track payment status & dues',
-            icon: Banknote,
-            href: '/admin/fees',
-            color: 'purple'
+            title: 'Academic Setup',
+            description: 'Create Classes and Subjects',
+            icon: BookOpen,
+            href: '/admin/academic-setup',
+            color: 'blue'
         },
         {
             title: 'GPA Ledger',
@@ -78,23 +86,16 @@ const AdminDashboard = () => {
             href: '/admin/manage-exams',
             color: 'purple'
         },
-        {
-            title: 'Notices & Alerts',
-            description: 'Broadcast system announcements',
-            icon: AlertTriangle,
-            href: '/admin/notices',
-            color: 'orange'
-        },
     ];
 
     // Priority Actions (The "Big Buttons")
     const quickActions = [
         {
-            title: 'Enroll Student',
-            description: 'Register a new admission',
-            icon: UserPlus,
-            href: '/admin/enroll-student',
-            color: 'indigo'
+            title: 'GPA Ledger',
+            description: 'Process university result PDFs',
+            icon: BarChart3,
+            href: '/admin/gpa',
+            color: 'green'
         },
         {
             title: 'Record Fee Payment',

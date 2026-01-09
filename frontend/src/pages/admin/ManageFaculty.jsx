@@ -3,7 +3,12 @@ import api from '../../api/axiosConfig';
 import { Trash2, Plus, User, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 const ManageFaculty = () => {
+    // Data State
     const [facultyList, setFacultyList] = useState([]);
+    const [subjects, setSubjects] = useState([]);
+    const [classes, setClasses] = useState([]);
+
+    // Selection State
     const [selectedFaculty, setSelectedFaculty] = useState(null);
     const [allocations, setAllocations] = useState([]);
 
@@ -12,35 +17,35 @@ const ManageFaculty = () => {
     const [classId, setClassId] = useState('');
 
     // UI State
-    const [status, setStatus] = useState({ type: '', message: '' }); // Toast
-    const [deleteId, setDeleteId] = useState(null); // For Confirmation Modal
+    const [status, setStatus] = useState({ type: '', message: '' });
+    const [deleteId, setDeleteId] = useState(null);
 
-    // Data for Dropdowns (Mocked for now as per previous steps)
-    const subjects = [
-        { id: 1, name: 'History of Architecture (ARC-201)' },
-        { id: 2, name: 'Building Construction (ARC-202)' },
-        { id: 3, name: 'Urban Planning (ARC-401)' }
-    ];
-    const classes = [
-        { id: 1, name: 'Second Year - Div A' },
-        { id: 2, name: 'Third Year - Div A' }
-    ];
-
+    // 1. Initial Load: Fetch Faculty, Subjects, and Classes
     useEffect(() => {
-        const loadFaculty = async () => {
+        const loadInitialData = async () => {
             try {
-                const response = await api.get('/admin/faculty/all');
-                setFacultyList(response.data);
+                // Parallel fetching for performance
+                const [facRes, subRes, clsRes] = await Promise.all([
+                    api.get('/admin/faculty/all'),
+                    api.get('/admin/subjects'),
+                    api.get('/admin/classes')
+                ]);
+
+                setFacultyList(facRes.data);
+                setSubjects(subRes.data);
+                setClasses(clsRes.data);
             } catch (error) {
-                console.error("Failed to load faculty list");
+                console.error("Failed to load initial data", error);
+                setStatus({ type: 'error', message: 'Failed to load system data.' });
             }
         };
-        loadFaculty();
+        loadInitialData();
     }, []);
 
+    // 2. Load Allocations when Faculty is selected
     const handleSelect = async (faculty) => {
         setSelectedFaculty(faculty);
-        setStatus({ type: '', message: '' }); // Clear any old messages
+        setStatus({ type: '', message: '' });
         try {
             const response = await api.get(`/admin/faculty/${faculty.id}/allocations`);
             setAllocations(response.data);
@@ -49,6 +54,7 @@ const ManageFaculty = () => {
         }
     };
 
+    // 3. Assign Subject Logic
     const handleAdd = async (e) => {
         e.preventDefault();
         setStatus({ type: '', message: '' });
@@ -60,16 +66,16 @@ const ManageFaculty = () => {
                 classId: classId
             });
 
-            // Success Toast
             setStatus({ type: 'success', message: 'Subject Assigned Successfully!' });
 
-            // Reset Form
+            // Reset Dropdowns
             setSubjectId('');
             setClassId('');
 
-            handleSelect(selectedFaculty); // Refresh list
+            // Refresh List for current faculty
+            const response = await api.get(`/admin/faculty/${selectedFaculty.id}/allocations`);
+            setAllocations(response.data);
 
-            // Auto-hide toast
             setTimeout(() => setStatus({ type: '', message: '' }), 3000);
 
         } catch (error) {
@@ -77,24 +83,27 @@ const ManageFaculty = () => {
         }
     };
 
-    // Triggered when clicking Trash icon
+    // 4. Delete Logic
     const confirmDelete = (id) => {
         setDeleteId(id);
     };
 
-    // Triggered when clicking "Yes, Remove" in Modal
     const executeDelete = async () => {
         if (!deleteId) return;
 
         try {
             await api.delete(`/admin/allocation/${deleteId}`);
             setStatus({ type: 'success', message: 'Assignment Removed Successfully' });
-            handleSelect(selectedFaculty); // Refresh list
+
+            // Refresh List
+            const response = await api.get(`/admin/faculty/${selectedFaculty.id}/allocations`);
+            setAllocations(response.data);
+
             setTimeout(() => setStatus({ type: '', message: '' }), 3000);
         } catch (error) {
             setStatus({ type: 'error', message: 'Failed to remove assignment.' });
         } finally {
-            setDeleteId(null); // Close Modal
+            setDeleteId(null);
         }
     };
 
@@ -165,10 +174,10 @@ const ManageFaculty = () => {
                                 <p className="p-4 text-gray-500 text-sm">No subjects assigned.</p>
                             ) : (
                                 allocations.map(a => (
-                                    <div key={a.id} className="p-4 flex justify-between items-center border-b last:border-0 border-gray-200">
+                                    <div key={a.id} className="p-4 flex justify-between items-center border-b last:border-0 border-gray-200 hover:bg-white transition-colors">
                                         <div>
-                                            <p className="font-bold text-gray-800">{a.subjectName}</p>
-                                            <p className="text-xs text-gray-500">{a.className} • {a.division}</p>
+                                            <p className="font-bold text-gray-800">{a.subjectName} <span className="text-gray-400 text-xs font-normal">({a.subjectCode})</span></p>
+                                            <p className="text-xs text-gray-500">{a.className} • Div {a.division}</p>
                                         </div>
                                         <button
                                             onClick={() => confirmDelete(a.id)}
@@ -186,16 +195,26 @@ const ManageFaculty = () => {
                         <h3 className="font-semibold text-gray-700 mb-3">Assign New Subject</h3>
                         <form onSubmit={handleAdd} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                                <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="p-2.5 border rounded-lg w-full bg-white" required>
-                                    <option value="">Select Subject</option>
-                                    {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                </select>
-                                <select value={classId} onChange={(e) => setClassId(e.target.value)} className="p-2.5 border rounded-lg w-full bg-white" required>
-                                    <option value="">Select Class</option>
-                                    {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                </select>
+                                <div>
+                                    <label className="block text-xs text-gray-500 mb-1 font-medium">Subject</label>
+                                    <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="p-2.5 border rounded-lg w-full bg-white text-sm" required>
+                                        <option value="">-- Select Subject --</option>
+                                        {subjects.map(s => (
+                                            <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-gray-500 mb-1 font-medium">Class Batch</label>
+                                    <select value={classId} onChange={(e) => setClassId(e.target.value)} className="p-2.5 border rounded-lg w-full bg-white text-sm" required>
+                                        <option value="">-- Select Class --</option>
+                                        {classes.map(c => (
+                                            <option key={c.id} value={c.id}>{c.batchName} ({c.division})</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
-                            <button type="submit" className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center transition-colors">
+                            <button type="submit" className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center transition-colors shadow-sm">
                                 <Plus className="w-4 h-4 mr-2" /> Assign Subject
                             </button>
                         </form>

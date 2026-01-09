@@ -21,13 +21,14 @@ public class DataSeeder implements CommandLineRunner {
         if (classRepository.count() == 0) {
             classRepository.save(ClassBatch.builder().batchName("Second Year B.Arch").division("A").academicYear(2025).currentSemester(3).build());
             classRepository.save(ClassBatch.builder().batchName("Third Year B.Arch").division("A").academicYear(2025).currentSemester(5).build());
-            System.out.println("✅ DataSeeder: Classes Created");
+            System.out.println("DataSeeder: Classes Created");
         }
 
         if (subjectRepository.count() == 0) {
-            subjectRepository.save(Subject.builder().name("History of Architecture").code("ARC-201").semester(3).department("Architecture").build());
-            subjectRepository.save(Subject.builder().name("Building Construction").code("ARC-202").semester(3).department("Architecture").build());
-            System.out.println("✅ DataSeeder: Subjects Created");
+            subjectRepository.save(Subject.builder().name("History of Architecture").code("ARC-201").department("Architecture").build());
+            subjectRepository.save(Subject.builder().name("Building Construction").code("ARC-202").department("Architecture").build());
+            subjectRepository.save(Subject.builder().name("Urban Planning").code("ARC-401").department("Architecture").build());
+            System.out.println("DataSeeder: Subjects Created");
         }
     }
 }

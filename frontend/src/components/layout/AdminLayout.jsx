@@ -3,8 +3,6 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 import {
   LayoutDashboard,
-  Upload,
-  UserCheck,
   Bell,
   BarChart3,
   Users,
@@ -15,6 +13,7 @@ import {
   UserPlus,
   Banknote,
   Briefcase,
+  BookOpen,
   Calendar
 } from 'lucide-react';
 
@@ -34,24 +33,22 @@ const AdminLayout = () => {
   const mainNav = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Notices', href: '/admin/notices', icon: Bell },
-    // { name: 'Upload Center', href: '/admin/upload', icon: Upload }, // Add later if Admin needs to upload syllabus
-    // { name: 'Attendance', href: '/admin/attendance', icon: UserCheck }, // Add later if Admin needs to view logs
   ];
 
   // Admin Tools (Bottom Section)
   const adminTools = [
-    // People
-    { name: 'Enroll Student', href: '/admin/enroll-student', icon: UserPlus },
-    { name: 'Add Faculty', href: '/admin/add-faculty', icon: UserPlus },
-    { name: 'Manage Workload', href: '/admin/manage-faculty', icon: Briefcase }, // Allocation
-
-    // Operations
-    { name: 'Fee Management', href: '/admin/fees', icon: Banknote },
-    { name: 'Exam Schedules', href: '/admin/manage-exams', icon: Calendar }, // New Feature
+    // People Management
+    { name: 'Enroll Students', href: '/admin/enroll-student', icon: UserPlus },
+    { name: 'Student Management', href: '/admin/manage-students', icon: Users }, // Changed to manage list
+    { name: 'Enroll Faculty', href: '/admin/add-faculty', icon: UserPlus },
+    { name: 'Manage Workload', href: '/admin/manage-faculty', icon: Briefcase },
+    { name: 'Academic Setup', href: '/admin/academic-setup', icon: BookOpen },
     { name: 'GPA Ledger', href: '/admin/gpa', icon: BarChart3 },
 
-    // System
-    // { name: 'Alerts', href: '/admin/alerts', icon: AlertTriangle }, // Merged with Notices usually
+    // Financial & Academic
+    { name: 'Fee Management', href: '/admin/fees', icon: Banknote },
+    { name: 'Exam Schedules', href: '/admin/manage-exams', icon: Calendar },
+    { name: 'Timetables', href: '/admin/manage-timetables', icon: Calendar },
   ];
 
   return (
@@ -62,7 +59,6 @@ const AdminLayout = () => {
 
           {/* Logo Section */}
           <div className="h-16 flex items-center px-6 border-b border-gray-200">
-            {/* Ensure image path matches your public folder */}
             <img src="/sssms-logo.png" alt="SSSMS Logo" className="w-8 h-8 object-contain mr-3" />
             <div>
               <h1 className="text-lg font-bold text-gray-900 leading-tight">SSSMS</h1>

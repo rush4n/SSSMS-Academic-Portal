@@ -15,7 +15,6 @@ public class Subject {
     private Long id;
 
     private String name;
-    private String code; // e.g. "ARC-201"
-    private int semester;
+    private String code;
     private String department;
 }

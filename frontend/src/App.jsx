@@ -22,6 +22,8 @@ import FeeManagement from './pages/admin/FeeManagement';
 import GPALedger from "./pages/admin/GPALedger";
 import ManageFaculty from './pages/admin/ManageFaculty';
 import ManageTimetables from './pages/admin/ManageTimetables';
+import AcademicSetup from './pages/admin/AcademicSetup';
+import ManageStudents from './pages/admin/ManageStudents';
 
 // Faculty Pages
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
@@ -66,6 +68,8 @@ function App() {
                 <Route path="manage-faculty" element={<ManageFaculty />} />
                 <Route path="manage-timetables" element={<ManageTimetables />} />
                 <Route path="manage-exams" element={<UploadExamSchedule />} />
+                <Route path="academic-setup" element={<AcademicSetup />} />
+                <Route path="manage-students" element={<ManageStudents />} />
               </Route>
             </Route>
 
