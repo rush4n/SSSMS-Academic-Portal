@@ -74,14 +74,6 @@ const FacultyDashboard = () => {
             color: 'blue',
             href: '/faculty/exam-schedule'
         },
-
-        {
-            title: 'Attendance Reports',
-            subtitle: 'View detailed attendance analytics',
-            icon: BarChart3,
-            color: 'indigo',
-            href: '/faculty/reports'
-        },
     ];
 
     const getColorClasses = (color) => {

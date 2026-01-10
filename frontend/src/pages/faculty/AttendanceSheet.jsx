@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { Save, User, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Save, User, CheckCircle, XCircle, AlertCircle, BarChart3 } from 'lucide-react';
 
 const AttendanceSheet = () => {
     const { id } = useParams();
@@ -12,25 +12,17 @@ const AttendanceSheet = () => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-
-    // New State
     const [status, setStatus] = useState({ type: '', message: '' });
 
-    // 1. Fetch Students
     useEffect(() => {
         const fetchStudents = async () => {
             try {
                 const response = await api.get(`/faculty/allocation/${id}/students`);
                 setStudents(response.data);
-
                 const initialStatus = {};
-                response.data.forEach(s => {
-                    initialStatus[s.id] = 'PRESENT';
-                });
+                response.data.forEach(s => { initialStatus[s.id] = 'PRESENT'; });
                 setAttendance(initialStatus);
-
             } catch (error) {
-                console.error("Failed to load students", error);
                 setStatus({ type: 'error', message: 'Failed to load student list.' });
             } finally {
                 setLoading(false);
@@ -39,7 +31,6 @@ const AttendanceSheet = () => {
         fetchStudents();
     }, [id]);
 
-    // 2. Handle Toggle
     const toggleStatus = (studentId) => {
         setAttendance(prev => ({
             ...prev,
@@ -47,11 +38,9 @@ const AttendanceSheet = () => {
         }));
     };
 
-    // 3. Submit
     const handleSubmit = async () => {
         setSubmitting(true);
-        setStatus({ type: '', message: '' }); // Clear previous
-
+        setStatus({ type: '', message: '' });
         const payload = {
             allocationId: id,
             date: date,
@@ -60,19 +49,12 @@ const AttendanceSheet = () => {
                 status: attendance[sid]
             }))
         };
-
         try {
             await api.post('/faculty/attendance', payload);
-
-            // Show Success Message
             setStatus({ type: 'success', message: 'Attendance Saved Successfully!' });
-
-            setTimeout(() => {
-                navigate('/faculty/dashboard');
-            }, 1500);
-
+            setTimeout(() => { navigate('/faculty/dashboard'); }, 1500);
         } catch (error) {
-            setStatus({ type: 'error', message: 'Failed to save attendance. Please try again.' });
+            setStatus({ type: 'error', message: 'Failed to save attendance.' });
         } finally {
             setSubmitting(false);
         }
@@ -83,31 +65,39 @@ const AttendanceSheet = () => {
     return (
         <div className="max-w-4xl mx-auto">
 
-            {/* Header */}
-            <div className="flex justify-between items-center mb-6">
+            {/* Header Section */}
+            <div className="flex justify-between items-start mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Mark Attendance</h1>
                     <p className="text-sm text-gray-500">Select students who are absent.</p>
                 </div>
-                <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
-                />
+
+                <div className="flex gap-3">
+                    {/* ▼▼▼ NEW BUTTON: Link to Report ▼▼▼ */}
+                    <button
+                        onClick={() => navigate(`/faculty/report/${id}`)}
+                        className="flex items-center px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-100 transition-colors"
+                    >
+                        <BarChart3 className="w-4 h-4 mr-2" /> View Reports
+                    </button>
+
+                    <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                    />
+                </div>
             </div>
 
+            {/* Status Banner */}
             {status.message && (
                 <div className={`p-4 mb-6 rounded-lg flex items-center border ${
                     status.type === 'success'
                         ? 'bg-green-50 text-green-700 border-green-200'
                         : 'bg-red-50 text-red-700 border-red-200'
                 }`}>
-                    {status.type === 'success' ? (
-                        <CheckCircle className="w-5 h-5 mr-3" />
-                    ) : (
-                        <AlertCircle className="w-5 h-5 mr-3" />
-                    )}
+                    {status.type === 'success' ? <CheckCircle className="w-5 h-5 mr-3"/> : <AlertCircle className="w-5 h-5 mr-3"/>}
                     <span className="font-medium">{status.message}</span>
                 </div>
             )}
@@ -118,13 +108,12 @@ const AttendanceSheet = () => {
                     <span>Student Details</span>
                     <span>Mark Status</span>
                 </div>
-
                 <div className="divide-y divide-gray-100">
                     {students.map((student) => (
                         <div key={student.id} className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
                             <div className="flex items-center">
                                 <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mr-4 font-bold text-sm">
-                                    {student.firstName[0]}{student.lastName[0]}
+                                    {student.firstName?.[0]}{student.lastName?.[0]}
                                 </div>
                                 <div>
                                     <p className="font-medium text-gray-900">{student.firstName} {student.lastName}</p>
@@ -151,19 +140,10 @@ const AttendanceSheet = () => {
                 </div>
             </div>
 
-            {/* Footer Actions */}
+            {/* Footer */}
             <div className="mt-8 flex justify-end gap-3">
-                <button
-                    onClick={() => navigate('/faculty/dashboard')}
-                    className="px-6 py-3 rounded-lg text-gray-600 hover:bg-gray-100 font-medium transition-colors"
-                >
-                    Cancel
-                </button>
-                <button
-                    onClick={handleSubmit}
-                    disabled={submitting}
-                    className="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 font-medium flex items-center shadow-sm disabled:opacity-50 transition-all"
-                >
+                <button onClick={() => navigate('/faculty/dashboard')} className="px-6 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+                <button onClick={handleSubmit} disabled={submitting} className="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 flex items-center shadow-sm disabled:opacity-50">
                     {submitting ? 'Saving...' : <><Save className="w-4 h-4 mr-2" /> Save Attendance</>}
                 </button>
             </div>
