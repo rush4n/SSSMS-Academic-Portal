@@ -62,7 +62,8 @@ const StudentResults = () => {
                     Term End Results (SGPA)
                 </h2>
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                    <table className="w-full text-left">
+                    <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm whitespace-nowrap">
                         <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
                             <th className="p-4 font-semibold text-gray-600">Exam Session</th>
@@ -92,6 +93,7 @@ const StudentResults = () => {
                         )}
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 

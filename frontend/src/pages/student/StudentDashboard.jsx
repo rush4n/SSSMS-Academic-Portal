@@ -98,11 +98,11 @@ const StudentDashboard = () => {
         <div className="max-w-7xl mx-auto">
 
             {/* Header */}
-            <div className="mb-10">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <div className="mb-8 md:mb-10">
+                <h1 className="text-2xl md:text-3xl font-bold text-blue-700 mb-2">
                     Welcome, {user?.name || user?.email?.split('@')[0] || "Student"}
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-sm md:text-base text-gray-600">
                     Architecture | Semester {user?.currentYear || '1'} | Year {user?.currentYear || '1'}
                 </p>
             </div>

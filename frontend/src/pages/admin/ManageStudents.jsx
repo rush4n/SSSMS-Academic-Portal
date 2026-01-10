@@ -121,7 +121,8 @@ const ManageStudents = () => {
 
             {/* Data Table */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <table className="w-full text-left text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm whitespace-nowrap">
                     <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase tracking-wider font-semibold">
                     <tr>
                         <th className="p-4">Student Name</th>
@@ -199,6 +200,7 @@ const ManageStudents = () => {
                     )}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     );
