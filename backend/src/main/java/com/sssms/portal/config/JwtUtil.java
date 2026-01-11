@@ -31,10 +31,8 @@ public class JwtUtil {
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> extraClaims = new HashMap<>();
 
-        // 1. Get the Role from the User object
         String role = userDetails.getAuthorities().iterator().next().getAuthority();
 
-        // 2. Put it into the Token
         extraClaims.put("role", role);
 
         return generateToken(extraClaims, userDetails);
@@ -82,14 +80,16 @@ public class JwtUtil {
                 .path("/api")
                 .maxAge(24 * 60 * 60)
                 .httpOnly(true)
-                .secure(false)
-                .sameSite("Strict")
+                .secure(true)
+                .sameSite("None")
                 .build();
     }
 
     public ResponseCookie getCleanJwtCookie() {
         return ResponseCookie.from("jwt-token", null)
                 .path("/api")
+                .secure(true)
+                .sameSite("None")
                 .build();
     }
 }
