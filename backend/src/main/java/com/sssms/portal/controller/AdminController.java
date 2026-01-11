@@ -11,6 +11,7 @@ import com.sssms.portal.repository.StudentRepository;
 import com.sssms.portal.repository.SubjectAllocationRepository;
 import com.sssms.portal.repository.SubjectRepository;
 import com.sssms.portal.service.AdminService;
+import com.sssms.portal.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +34,7 @@ public class AdminController {
     private final StudentRepository studentRepository;
     private final SubjectAllocationRepository allocationRepository;
     private final UserRepository userRepository;
+    private final com.sssms.portal.service.StudentService studentService;
 
     @PostMapping("/subjects")
     public ResponseEntity<?> createSubject(@RequestBody Subject subject) {
@@ -167,4 +169,14 @@ public class AdminController {
             subjectRepository.deleteById(id);
             return ResponseEntity.ok("Subject Deleted Successfully");
         }
+
+    @GetMapping("/student/{id}/profile")
+        public ResponseEntity<?> getStudentProfile(@PathVariable Long id) {
+            return ResponseEntity.ok(studentService.getProfile(id));
+        }
+
+    @GetMapping("/faculty/{id}/profile")
+        public ResponseEntity<?> getFacultyProfile(@PathVariable Long id) {
+            return ResponseEntity.ok(adminService.getFacultyProfile(id));
+     }
 }

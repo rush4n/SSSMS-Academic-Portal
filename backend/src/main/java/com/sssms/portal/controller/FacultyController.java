@@ -30,6 +30,8 @@ public class FacultyController {
     private final UserRepository userRepository;
     private final FacultyRepository facultyRepository;
     private final FacultyService facultyService;
+    private final StudentRepository studentRepository;
+    private final com.sssms.portal.service.StudentService studentService;
 
     @GetMapping("/my-subjects")
     public ResponseEntity<?> getMySubjects(@AuthenticationPrincipal UserDetails userDetails) {
@@ -98,6 +100,56 @@ public class FacultyController {
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
                     .contentType(MediaType.parseMediaType("application/csv"))
                     .body(file);
+        }
+
+    @GetMapping("/student/{id}/profile")
+        public ResponseEntity<?> getStudentProfile(
+                @AuthenticationPrincipal UserDetails userDetails,
+                @PathVariable Long id
+        ) {
+            if (userDetails == null) return ResponseEntity.status(401).build();
+            User facultyUser = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+            Student student = studentRepository.findById(id).orElseThrow(() -> new RuntimeException("Student not found"));
+
+            List<SubjectAllocation> facultyAllocations = allocationRepository.findByFacultyId(facultyUser.getUserId());
+
+            boolean isTeaching = facultyAllocations.stream().anyMatch(allocation -> {
+                if (allocation.getSubject().getAcademicYear() == student.getAcademicYear()) return true;
+
+                return student.getExtraCourses().contains(allocation);
+            });
+
+            if (!isTeaching) {
+                return ResponseEntity.status(403).body("You are not authorized to view this student's profile.");
+            }
+
+            return ResponseEntity.ok(studentService.getProfile(id));
+        }
+
+    @GetMapping("/profile/me")
+        public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal UserDetails userDetails) {
+            if (userDetails == null) return ResponseEntity.status(401).build();
+            User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+
+            Faculty faculty = facultyRepository.findById(user.getUserId()).orElseThrow();
+            List<SubjectAllocation> allocations = allocationRepository.findByFacultyId(user.getUserId());
+
+            List<String> subjects = allocations.stream()
+                    .map(a -> a.getSubject().getName() + " (" + a.getSubject().getAcademicYear() + ")")
+                    .collect(Collectors.toList());
+
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("firstName", faculty.getFirstName());
+            response.put("lastName", faculty.getLastName());
+            response.put("email", user.getEmail());
+            response.put("designation", faculty.getDesignation());
+            response.put("department", faculty.getDepartment());
+            response.put("qualification", faculty.getQualification());
+            response.put("joiningDate", faculty.getJoiningDate());
+            response.put("phoneNumber", faculty.getPhoneNumber());
+            response.put("subjects", subjects);
+
+            return ResponseEntity.ok(response);
         }
 
 }

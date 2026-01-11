@@ -8,7 +8,6 @@ const FacultyResultsSubjects = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // We reuse the existing endpoint because the list of subjects is the same
         api.get('/faculty/my-subjects')
             .then(res => setSubjects(res.data))
             .catch(err => console.error(err));

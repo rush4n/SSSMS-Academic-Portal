@@ -131,6 +131,28 @@ public class AdminService {
         }).collect(Collectors.toList());
     }
 
+    public Map<String, Object> getFacultyProfile(Long userId) {
+            Faculty faculty = facultyRepository.findById(userId).orElseThrow();
+
+            List<SubjectAllocation> allocations = allocationRepository.findByFacultyId(userId);
+            List<String> subjects = allocations.stream()
+                    .map(a -> a.getSubject().getName() + " (" + a.getSubject().getAcademicYear() + ")")
+                    .collect(Collectors.toList());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("firstName", faculty.getFirstName());
+            response.put("lastName", faculty.getLastName());
+            response.put("email", faculty.getUser().getEmail());
+            response.put("designation", faculty.getDesignation());
+            response.put("department", faculty.getDepartment());
+            response.put("qualification", faculty.getQualification());
+            response.put("joiningDate", faculty.getJoiningDate());
+            response.put("phoneNumber", faculty.getPhoneNumber());
+            response.put("subjects", subjects);
+
+            return response;
+        }
+
     public String processResultLedger(MultipartFile file) { return "Results Processed"; }
     public List<Map<String, Object>> getAllAllocations() { return List.of(); }
 }

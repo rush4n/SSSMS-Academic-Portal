@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { Trash2, Plus, User, CheckCircle, XCircle, AlertCircle, UserX } from 'lucide-react'; // Added UserX
+import { Trash2, Plus, User, CheckCircle, XCircle, AlertCircle, UserX, Eye } from 'lucide-react';
 
 const ManageFaculty = () => {
+    const navigate = useNavigate();
+
     // Data State
     const [facultyList, setFacultyList] = useState([]);
     const [subjects, setSubjects] = useState([]);
@@ -85,9 +88,8 @@ const ManageFaculty = () => {
         }
     };
 
-    // Faculty Unenroll Logic
     const confirmUnenroll = (e, id) => {
-        e.stopPropagation(); // Don't select the faculty when clicking delete
+        e.stopPropagation();
         setUnenrollId(id);
     };
 
@@ -96,14 +98,11 @@ const ManageFaculty = () => {
         try {
             await api.delete(`/admin/faculty/${unenrollId}`);
             alert('Faculty Member Un-enrolled Successfully');
-
-            // Clear selection if deleted user was selected
             if (selectedFaculty?.id === unenrollId) {
                 setSelectedFaculty(null);
                 setAllocations([]);
             }
-
-            loadData(); // Refresh list
+            loadData();
         } catch (e) {
             alert('Failed to un-enroll faculty.');
         } finally {
@@ -133,7 +132,7 @@ const ManageFaculty = () => {
                                 selectedFaculty?.id === f.id ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'
                             }`}
                         >
-                            <div className="flex items-center overflow-hidden">
+                            <div className="flex items-center overflow-hidden flex-1">
                                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 mr-3 flex-shrink-0">
                                     <User className="w-5 h-5" />
                                 </div>
@@ -145,14 +144,29 @@ const ManageFaculty = () => {
                                 </div>
                             </div>
 
-                            {/* Unenroll Button (Visible on Hover or Selected) */}
-                            <button
-                                onClick={(e) => confirmUnenroll(e, f.id)}
-                                className={`p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all ${selectedFaculty?.id === f.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
-                                title="Un-enroll Faculty"
-                            >
-                                <UserX className="w-4 h-4" />
-                            </button>
+                            {/* Action Buttons */}
+                            <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                {/* View Profile */}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/admin/faculty-profile/${f.id}`);
+                                    }}
+                                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg mr-1"
+                                    title="View Profile"
+                                >
+                                    <Eye className="w-4 h-4" />
+                                </button>
+
+                                {/* Unenroll */}
+                                <button
+                                    onClick={(e) => confirmUnenroll(e, f.id)}
+                                    className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"
+                                    title="Un-enroll Faculty"
+                                >
+                                    <UserX className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>

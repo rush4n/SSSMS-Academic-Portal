@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { Save, ArrowLeft, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Save, ArrowLeft, AlertCircle, CheckCircle, XCircle, Eye } from 'lucide-react';
 
 const GradingSheet = () => {
     const { allocationId } = useParams();
@@ -10,10 +10,8 @@ const GradingSheet = () => {
 
     const [students, setStudents] = useState([]);
 
-    // State for Exam Title
     const [examTitle, setExamTitle] = useState('Unit Test 1');
 
-    // State for Type
     const [assessmentType, setAssessmentType] = useState('INTERNAL');
 
     const [maxMarks, setMaxMarks] = useState(20);
@@ -159,8 +157,20 @@ const GradingSheet = () => {
                             <td className="p-4 text-sm text-gray-600 font-mono">
                                 {student.prn || student.id}
                             </td>
-                            <td className="p-4 font-medium text-gray-900">
+                            <td className="p-4 font-medium text-gray-900 flex items-center gap-2">
                                 {getStudentName(student)}
+
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/faculty/student-profile/${student.id}`);
+                                    }}
+                                    className="text-gray-400 hover:text-purple-600 transition-colors p-1 rounded-full hover:bg-purple-50"
+                                    title="View Profile"
+                                >
+                                    <Eye className="w-4 h-4" />
+                                </button>
+
                             </td>
                             <td className="p-4 text-right">
                                 <div className="flex justify-end items-center gap-2">

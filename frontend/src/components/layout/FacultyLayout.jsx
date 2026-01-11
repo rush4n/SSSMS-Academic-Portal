@@ -68,19 +68,20 @@ const FacultyLayout = () => {
                     </button>
                 </div>
 
-                <div className="px-6 py-6 border-b border-gray-200">
+                {/* User Profile Section*/}
+                <Link to="/faculty/profile" className="block px-6 py-6 border-b border-gray-200 hover:bg-gray-50 transition-colors group cursor-pointer">
                     <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 group-hover:bg-purple-200 transition-colors">
                             <User className="w-5 h-5" />
                         </div>
                         <div className="ml-3 overflow-hidden">
-                            <p className="text-sm font-semibold text-gray-900 truncate">
+                            <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-purple-700 transition-colors">
                                 {user?.name || "Faculty Member"}
                             </p>
                             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                         </div>
                     </div>
-                </div>
+                </Link>
 
                 <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
                     {navItems.map((item) => (

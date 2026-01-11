@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { Search, Edit2, Save, X, User, BookOpen, Plus, Trash2, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
+import { Search, Edit2, Save, X, User, BookOpen, Plus, Trash2, CheckCircle, AlertTriangle, AlertCircle, Eye } from 'lucide-react';
 
 const ManageStudents = () => {
+    const navigate = useNavigate();
+
     // Data State
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -45,13 +48,13 @@ const ManageStudents = () => {
         fetchStudents();
     }, [yearFilter]);
 
+    // 2. Delete Logic
     const confirmDelete = (id) => {
         setDeleteId(id);
     };
 
     const executeDelete = async () => {
         if (!deleteId) return;
-
         try {
             await api.delete(`/admin/student/${deleteId}`);
             setStatus({ type: 'success', msg: "Student Un-enrolled Successfully" });
@@ -64,6 +67,7 @@ const ManageStudents = () => {
         }
     };
 
+    // 3. Course Manager Logic
     const openCourseManager = async (student) => {
         setSelectedStudent(student);
         setCourseModalOpen(true);
@@ -84,7 +88,9 @@ const ManageStudents = () => {
         try {
             await api.post(`/admin/student/${selectedStudent.id}/course/${selectedAllocationId}`);
             setModalStatus({ type: 'success', msg: "Course Assigned!" });
+
             fetchStudents();
+
             const addedCourse = allAllocations.find(a => a.id === parseInt(selectedAllocationId));
             const updatedExtras = [...(selectedStudent.extraCourses || [])];
             updatedExtras.push({
@@ -92,6 +98,7 @@ const ManageStudents = () => {
                 subject: { name: addedCourse.subjectName, code: addedCourse.subjectCode },
                 faculty: { firstName: addedCourse.facultyName.split(' ')[0], lastName: addedCourse.facultyName.split(' ')[1] || '' }
             });
+
             setSelectedStudent({ ...selectedStudent, extraCourses: updatedExtras });
         } catch (e) {
             setModalStatus({ type: 'error', msg: "Failed to assign." });
@@ -99,10 +106,7 @@ const ManageStudents = () => {
     };
 
     const removeCourse = async (allocationId) => {
-        // We can keep window.confirm for the sub-modal action, or replace it too.
-        // For now, let's stick to window.confirm inside the modal to avoid modal-on-modal complexity.
         if(!window.confirm("Remove this extra course?")) return;
-
         setModalStatus(null);
         try {
             await api.delete(`/admin/student/${selectedStudent.id}/course/${allocationId}`);
@@ -115,6 +119,7 @@ const ManageStudents = () => {
         }
     };
 
+    // 4. Edit Logic
     const filteredStudents = students.filter(s =>
         s.firstName.toLowerCase().includes(search.toLowerCase()) ||
         s.lastName.toLowerCase().includes(search.toLowerCase()) ||
@@ -128,7 +133,7 @@ const ManageStudents = () => {
         try {
             await api.put(`/admin/student/${editingId}`, editForm);
             setEditingId(null);
-            setStatus({ type: 'success', msg: "Student Updated" });
+            setStatus({ type: 'success', msg: "Student Updated Successfully" });
             fetchStudents();
             setTimeout(() => setStatus(null), 3000);
         }
@@ -142,7 +147,7 @@ const ManageStudents = () => {
 
     return (
         <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-end mb-6">
+            <div className="flex justify-between items-end mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Student Directory</h1>
                     <p className="text-gray-600 mt-1">Manage enrollments and individual course assignments.</p>
@@ -152,7 +157,7 @@ const ManageStudents = () => {
                 </div>
             </div>
 
-            {/* Main Page Status Toast */}
+            {/* Status Toast */}
             {status && (
                 <div className={`p-4 mb-6 rounded-lg flex items-center border ${
                     status.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
@@ -162,6 +167,7 @@ const ManageStudents = () => {
                 </div>
             )}
 
+            {/* Toolbar */}
             <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 flex flex-wrap gap-4 items-center">
                 <div className="relative flex-1 min-w-[200px]">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -182,6 +188,7 @@ const ManageStudents = () => {
                 <button onClick={() => {setYearFilter(''); setSearch('')}} className="text-sm text-red-500 hover:underline">Reset</button>
             </div>
 
+            {/* Table */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm whitespace-nowrap">
@@ -196,7 +203,7 @@ const ManageStudents = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                         {loading ? (
-                            <tr><td colSpan="5" className="p-8 text-center text-gray-500">Loading...</td></tr>
+                            <tr><td colSpan="5" className="p-8 text-center text-gray-500">Loading directory...</td></tr>
                         ) : filteredStudents.length === 0 ? (
                             <tr><td colSpan="5" className="p-8 text-center text-gray-500">No students found.</td></tr>
                         ) : (
@@ -246,12 +253,26 @@ const ManageStudents = () => {
                                                 ) : <span className="text-gray-400 text-xs">Standard Only</span>}
                                             </td>
                                             <td className="p-4 text-right flex justify-end gap-2">
+
+                                                {/* Manage Courses */}
                                                 <button onClick={() => openCourseManager(student)} className="text-purple-600 hover:bg-purple-50 p-2 rounded-lg" title="Manage Courses">
                                                     <BookOpen className="w-4 h-4" />
                                                 </button>
+
+                                                <button
+                                                    onClick={() => navigate(`/admin/student-profile/${student.id}`)}
+                                                    className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 p-2 rounded-lg"
+                                                    title="View Profile"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                </button>
+
+                                                {/* Edit */}
                                                 <button onClick={() => startEdit(student)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg" title="Edit Profile">
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
+
+                                                {/* Delete */}
                                                 <button onClick={() => confirmDelete(student.id)} className="text-red-600 hover:bg-red-50 p-2 rounded-lg" title="Un-enroll">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -266,7 +287,7 @@ const ManageStudents = () => {
                 </div>
             </div>
 
-            {/* CONFIRMATION MODAL */}
+            {/* DELETE CONFIRMATION MODAL */}
             {deleteId && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
                     <div className="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full border border-gray-200">
@@ -275,15 +296,11 @@ const ManageStudents = () => {
                             <h3 className="text-lg font-bold">Confirm Un-enrollment</h3>
                         </div>
                         <p className="text-gray-600 mb-6 text-sm">
-                            Are you sure you want to un-enroll this student? This will delete all their records (fees, attendance, etc). This action cannot be undone.
+                            Are you sure you want to un-enroll this student? This will delete all their records.
                         </p>
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setDeleteId(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm">
-                                Cancel
-                            </button>
-                            <button onClick={executeDelete} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm font-medium shadow-sm">
-                                Yes, Un-enroll
-                            </button>
+                            <button onClick={() => setDeleteId(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm">Cancel</button>
+                            <button onClick={executeDelete} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm font-medium shadow-sm">Yes, Un-enroll</button>
                         </div>
                     </div>
                 </div>
@@ -317,7 +334,7 @@ const ManageStudents = () => {
                                             <div key={c.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
                                                 <div>
                                                     <p className="font-medium text-gray-900 text-sm">{c.subject.name}</p>
-                                                    <p className="text-xs text-gray-500">{c.subject.code}</p>
+                                                    <p className="text-xs text-gray-500">{c.subject.code} • {c.faculty?.firstName}</p>
                                                 </div>
                                                 <button onClick={() => removeCourse(c.id)} className="text-red-500 hover:bg-red-100 p-1.5 rounded transition-colors"><Trash2 className="w-4 h-4" /></button>
                                             </div>

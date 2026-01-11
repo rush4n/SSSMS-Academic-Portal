@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { Save, User, CheckCircle, XCircle, AlertCircle, BarChart3 } from 'lucide-react';
+import { Save, User, CheckCircle, XCircle, AlertCircle, BarChart3, Eye } from 'lucide-react';
 
 const AttendanceSheet = () => {
     const { id } = useParams();
@@ -73,7 +73,7 @@ const AttendanceSheet = () => {
                 </div>
 
                 <div className="flex gap-3">
-                    {/* ▼▼▼ NEW BUTTON: Link to Report ▼▼▼ */}
+                    {/* Link to Report */}
                     <button
                         onClick={() => navigate(`/faculty/report/${id}`)}
                         className="flex items-center px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-100 transition-colors"
@@ -112,15 +112,31 @@ const AttendanceSheet = () => {
                     {students.map((student) => (
                         <div key={student.id} className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
                             <div className="flex items-center">
+                                {/* Avatar */}
                                 <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mr-4 font-bold text-sm">
                                     {student.firstName?.[0]}{student.lastName?.[0]}
                                 </div>
+                                {/* Details & Profile Link */}
                                 <div>
-                                    <p className="font-medium text-gray-900">{student.firstName} {student.lastName}</p>
+                                    <p className="font-medium text-gray-900 flex items-center gap-2">
+                                        {student.firstName} {student.lastName}
+                                        {/* ▼▼▼ VIEW PROFILE BUTTON ▼▼▼ */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/faculty/student-profile/${student.id}`);
+                                            }}
+                                            className="text-gray-400 hover:text-purple-600 transition-colors p-1 rounded-full hover:bg-purple-50"
+                                            title="View Profile"
+                                        >
+                                            <Eye className="w-4 h-4" />
+                                        </button>
+                                    </p>
                                     <p className="text-xs text-gray-500 font-mono">{student.prn}</p>
                                 </div>
                             </div>
 
+                            {/* Attendance Toggle */}
                             <button
                                 onClick={() => toggleStatus(student.id)}
                                 className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all ${

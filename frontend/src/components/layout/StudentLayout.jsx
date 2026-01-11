@@ -22,7 +22,6 @@ const StudentLayout = () => {
 
     const navItems = [
         { name: 'Dashboard', href: '/student/dashboard', icon: LayoutDashboard },
-        { name: 'My Profile', href: '/student/profile', icon: User },
         { name: 'Results', href: '/student/results', icon: Target },
         { name: 'Notices', href: '/student/notices', icon: Bell },
         { name: 'Class Timetable', href: '/student/timetable', icon: Clock },
@@ -64,19 +63,20 @@ const StudentLayout = () => {
                 </div>
 
                 {/* User Profile Section */}
-                <div className="px-6 py-6 border-b border-gray-200">
+                <Link to="/student/profile" className="block px-6 py-6 border-b border-gray-200 hover:bg-gray-50 transition-colors group cursor-pointer">
                     <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-200 transition-colors">
                             <User className="w-5 h-5" />
                         </div>
                         <div className="ml-3 overflow-hidden">
-                            <p className="text-sm font-semibold text-gray-900 truncate">
+                            <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-indigo-700 transition-colors">
                                 {user?.name || "Student"}
                             </p>
                             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Year {user?.currentYear || '1'}</p>
                         </div>
                     </div>
-                </div>
+                </Link>
 
                 {/* Navigation Links */}
                 <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">

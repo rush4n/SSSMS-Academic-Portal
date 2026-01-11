@@ -1,0 +1,78 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../../api/axiosConfig';
+import { User, Mail, Briefcase, BookOpen, Calendar, Phone, ArrowLeft, GraduationCap } from 'lucide-react';
+
+const FacultyProfileView = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const response = await api.get(`/admin/faculty/${id}/profile`);
+                setProfile(response.data);
+            } catch (error) {
+                console.error("Failed");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProfile();
+    }, [id]);
+
+    if (loading) return <div className="p-8 text-gray-500">Loading Profile...</div>;
+
+    return (
+        <div className="max-w-5xl mx-auto">
+            <button onClick={() => navigate(-1)} className="mb-6 flex items-center text-gray-600 hover:text-blue-600">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back
+            </button>
+
+            {/* Hero */}
+            <div className="bg-white rounded-xl border border-gray-200 p-8 mb-6 flex items-center gap-6 shadow-sm">
+                <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                    <User className="w-12 h-12" />
+                </div>
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-900">{profile.firstName} {profile.lastName}</h2>
+                    <p className="text-gray-500">{profile.designation} • {profile.department}</p>
+                    <div className="flex gap-4 mt-2 text-sm text-gray-600">
+                        <span className="flex items-center"><Mail className="w-4 h-4 mr-1"/> {profile.email}</span>
+                        <span className="flex items-center"><Phone className="w-4 h-4 mr-1"/> {profile.phoneNumber}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Academic Details */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <h3 className="text-lg font-bold mb-4 flex items-center"><GraduationCap className="w-5 h-5 mr-2 text-purple-600"/> Qualification</h3>
+                    <p className="text-gray-700">{profile.qualification || "Not Provided"}</p>
+
+                    <h3 className="text-lg font-bold mt-6 mb-4 flex items-center"><Calendar className="w-5 h-5 mr-2 text-purple-600"/> Date of Joining</h3>
+                    <p className="text-gray-700">{new Date(profile.joiningDate).toLocaleDateString()}</p>
+                </div>
+
+                {/* Workload */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <h3 className="text-lg font-bold mb-4 flex items-center"><BookOpen className="w-5 h-5 mr-2 text-blue-600"/> Current Teaching Load</h3>
+                    {profile.subjects.length === 0 ? (
+                        <p className="text-gray-500">No subjects assigned.</p>
+                    ) : (
+                        <ul className="space-y-2">
+                            {profile.subjects.map((sub, i) => (
+                                <li key={i} className="p-3 bg-gray-50 rounded-lg text-sm font-medium text-gray-700 border border-gray-100">
+                                    {sub}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+export default FacultyProfileView;

@@ -37,6 +37,9 @@ import AttendanceReport from './pages/faculty/AttendanceReport';
 
 import NoticesPage from './pages/common/NoticesPage';
 import UploadExamSchedule from './pages/common/UploadExamSchedule';
+import StudentProfileView from './pages/common/StudentProfileView';
+import FacultyProfileView from './pages/common/FacultyProfileView';
+import UserProfile from './pages/common/UserProfile';
 
 // Student Pages
 import StudentLayout from './components/layout/StudentLayout';
@@ -71,6 +74,9 @@ function App() {
                 <Route path="manage-exams" element={<UploadExamSchedule />} />
                 <Route path="academic-setup" element={<AcademicSetup />} />
                 <Route path="manage-students" element={<ManageStudents />} />
+                <Route path="student-profile/:id" element={<StudentProfileView />} />
+                <Route path="faculty-profile/:id" element={<FacultyProfileView />} />
+                <Route path="profile" element={<UserProfile />} />
               </Route>
             </Route>
 
@@ -97,6 +103,10 @@ function App() {
 
                 <Route path="reports" element={<FacultySubjectList mode="report" />} />
                 <Route path="report/:id" element={<AttendanceReport />} />
+
+                <Route path="student-profile/:id" element={<StudentProfileView />} />
+
+                <Route path="profile" element={<UserProfile />} />
 
               </Route>
             </Route>

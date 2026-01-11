@@ -54,6 +54,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").hasAnyAuthority("ROLE_ADMIN", "ADMIN")
 
                 // Faculty Routes
+                .requestMatchers("/api/faculty/profile/me").authenticated()
                 .requestMatchers("/api/faculty/**").hasAnyAuthority("ROLE_FACULTY", "FACULTY", "ROLE_ADMIN", "ADMIN")
 
                 // Student Routes
