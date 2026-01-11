@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { BookOpen, ArrowRight, BarChart3, Upload, UserCheck, Target } from 'lucide-react';
+import { useAuth } from '../../auth/useAuth';
+import { BookOpen, ArrowRight, BarChart3, Upload, Target, ShieldCheck } from 'lucide-react';
 
 const FacultySubjectList = ({ mode }) => {
+    const { user } = useAuth();
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -11,25 +13,44 @@ const FacultySubjectList = ({ mode }) => {
     useEffect(() => {
         const fetchSubjects = async () => {
             try {
-                const response = await api.get('/faculty/my-subjects');
-                setSubjects(response.data);
+                // Determine Endpoint
+                const endpoint = user?.role === 'ROLE_ADMIN'
+                    ? '/admin/allocations/all'
+                    : '/faculty/my-subjects';
+
+                console.log("Fetching subjects from:", endpoint); // DEBUG LOG
+
+                const response = await api.get(endpoint);
+
+                const normalizedData = response.data.map(item => ({
+                    ...item,
+                    className: item.className || item.year || "N/A",
+                    division: item.division || (user?.role === 'ROLE_ADMIN' ? item.facultyName : "")
+                }));
+
+                setSubjects(normalizedData);
             } catch (error) {
-                console.error("Failed to load subjects");
+                console.error("Failed to load subjects:", error);
+                if (error.response?.status === 403) {
+                    console.error("Permission Denied. Check Role:", user?.role);
+                }
             } finally {
                 setLoading(false);
             }
         };
-        fetchSubjects();
-    }, []);
+
+        if (user) {
+            fetchSubjects();
+        }
+    }, [user]);
 
     const handleNavigate = (id) => {
         if (mode === 'attendance') navigate(`/faculty/attendance/${id}`);
         else if (mode === 'upload') navigate(`/faculty/resources/${id}`);
-        else if (mode === 'results') navigate(`/faculty/results/${id}`);
+        else if (mode === 'results') navigate(`/faculty/grading/${id}`);
         else if (mode === 'report') navigate(`/faculty/report/${id}`);
     };
 
-    // Helper to get title based on mode
     const getPageTitle = () => {
         switch (mode) {
             case 'attendance': return 'Mark Attendance';
@@ -40,7 +61,6 @@ const FacultySubjectList = ({ mode }) => {
         }
     };
 
-    // Helper to get color based on mode
     const getIconColor = () => {
         switch (mode) {
             case 'attendance': return 'bg-blue-50 text-blue-600';
@@ -53,19 +73,24 @@ const FacultySubjectList = ({ mode }) => {
 
     return (
         <div className="max-w-6xl mx-auto">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {getPageTitle()}
-                </h1>
-                <p className="text-gray-600">Select a subject to proceed.</p>
+            <div className="mb-8 flex justify-between items-end">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{getPageTitle()}</h1>
+                    <p className="text-gray-600">Select a subject to proceed.</p>
+                </div>
+                {user?.role === 'ROLE_ADMIN' && (
+                    <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold flex items-center">
+                        <ShieldCheck className="w-3 h-3 mr-1"/> Admin View
+                    </span>
+                )}
             </div>
 
             {loading ? (
                 <div className="text-gray-500">Loading subjects...</div>
             ) : subjects.length === 0 ? (
                 <div className="bg-white p-8 rounded-xl border border-gray-200 text-center">
-                    <p className="text-gray-500 mb-4">No subjects assigned to you yet.</p>
-                    <p className="text-sm text-blue-600">Contact the Admin to allocate subjects.</p>
+                    <p className="text-gray-500 mb-4">No subjects found.</p>
+                    <p className="text-sm text-gray-400">Ensure the admin has allocated subjects to you.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -86,19 +111,15 @@ const FacultySubjectList = ({ mode }) => {
                                     {sub.subjectCode}
                                 </span>
                             </div>
-
                             <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
                                 {sub.subjectName}
                             </h3>
-                            <p className="text-gray-500 text-sm mb-6">
-                                {sub.className} - Div {sub.division}
+                            <p className="text-gray-500 text-sm mb-2">
+                                {sub.className}
+                                {sub.division && <span> • {sub.division}</span>}
                             </p>
-
-                            <div className="flex items-center text-sm font-medium text-gray-400 group-hover:text-gray-900 transition-colors">
-                                {mode === 'attendance' ? 'Take Attendance' :
-                                    mode === 'upload' ? 'Manage Files' :
-                                        mode === 'results' ? 'Enter Marks' :
-                                            'View Report'}
+                            <div className="flex items-center text-sm font-medium text-gray-400 group-hover:text-gray-900 transition-colors mt-4">
+                                <span>Proceed</span>
                                 <ArrowRight className="w-4 h-4 ml-2" />
                             </div>
                         </div>

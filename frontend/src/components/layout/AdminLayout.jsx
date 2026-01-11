@@ -39,6 +39,7 @@ const AdminLayout = () => {
 
   const adminTools = [
     { name: 'Academic Setup', href: '/admin/academic-setup', icon: BookOpen },
+    { name: 'Enroll Students', href: '/admin/enroll-student', icon: Users },
     { name: 'Student Management', href: '/admin/manage-students', icon: UserPlus },
     { name: 'Enroll Faculty', href: '/admin/add-faculty', icon: Users },
     { name: 'Manage Workload', href: '/admin/manage-faculty', icon: Briefcase },
@@ -46,7 +47,6 @@ const AdminLayout = () => {
     { name: 'Exam Schedules', href: '/admin/manage-exams', icon: Calendar },
     { name: 'Timetables', href: '/admin/manage-timetables', icon: Calendar },
     { name: 'GPA Ledger', href: '/admin/gpa', icon: BarChart3 },
-    { name: 'Alerts', href: '/admin/alerts', icon: AlertTriangle },
   ];
 
   return (

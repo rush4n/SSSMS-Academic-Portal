@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
-import { Trash2, Plus, User, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Trash2, Plus, User, CheckCircle, XCircle, AlertCircle, UserX } from 'lucide-react'; // Added UserX
 
 const ManageFaculty = () => {
     // Data State
     const [facultyList, setFacultyList] = useState([]);
     const [subjects, setSubjects] = useState([]);
-    const [classes, setClasses] = useState([]);
 
     // Selection State
     const [selectedFaculty, setSelectedFaculty] = useState(null);
@@ -14,35 +13,29 @@ const ManageFaculty = () => {
 
     // Form State
     const [subjectId, setSubjectId] = useState('');
-    const [classId, setClassId] = useState('');
 
     // UI State
     const [status, setStatus] = useState({ type: '', message: '' });
-    const [deleteId, setDeleteId] = useState(null);
+    const [deleteId, setDeleteId] = useState(null); // For Allocations
+    const [unenrollId, setUnenrollId] = useState(null); // For Faculty
 
-    // 1. Initial Load: Fetch Faculty, Subjects, and Classes
     useEffect(() => {
-        const loadInitialData = async () => {
-            try {
-                // Parallel fetching for performance
-                const [facRes, subRes, clsRes] = await Promise.all([
-                    api.get('/admin/faculty/all'),
-                    api.get('/admin/subjects'),
-                    api.get('/admin/classes')
-                ]);
-
-                setFacultyList(facRes.data);
-                setSubjects(subRes.data);
-                setClasses(clsRes.data);
-            } catch (error) {
-                console.error("Failed to load initial data", error);
-                setStatus({ type: 'error', message: 'Failed to load system data.' });
-            }
-        };
-        loadInitialData();
+        loadData();
     }, []);
 
-    // 2. Load Allocations when Faculty is selected
+    const loadData = async () => {
+        try {
+            const [facRes, subRes] = await Promise.all([
+                api.get('/admin/faculty/all'),
+                api.get('/admin/subjects')
+            ]);
+            setFacultyList(facRes.data);
+            setSubjects(subRes.data);
+        } catch (error) {
+            console.error("Failed to load data", error);
+        }
+    };
+
     const handleSelect = async (faculty) => {
         setSelectedFaculty(faculty);
         setStatus({ type: '', message: '' });
@@ -54,51 +47,36 @@ const ManageFaculty = () => {
         }
     };
 
-    // 3. Assign Subject Logic
     const handleAdd = async (e) => {
         e.preventDefault();
         setStatus({ type: '', message: '' });
 
+        if (!subjectId) return;
+
         try {
             await api.post('/admin/allocate-subject', {
                 facultyId: selectedFaculty.id,
-                subjectId: subjectId,
-                classId: classId
+                subjectId: subjectId
             });
 
             setStatus({ type: 'success', message: 'Subject Assigned Successfully!' });
-
-            // Reset Dropdowns
             setSubjectId('');
-            setClassId('');
 
-            // Refresh List for current faculty
             const response = await api.get(`/admin/faculty/${selectedFaculty.id}/allocations`);
             setAllocations(response.data);
-
             setTimeout(() => setStatus({ type: '', message: '' }), 3000);
-
         } catch (error) {
-            setStatus({ type: 'error', message: 'Failed to assign subject. It might already be assigned.' });
+            setStatus({ type: 'error', message: error.response?.data || 'Failed to assign subject.' });
         }
     };
 
-    // 4. Delete Logic
-    const confirmDelete = (id) => {
-        setDeleteId(id);
-    };
-
-    const executeDelete = async () => {
+    const executeAllocationDelete = async () => {
         if (!deleteId) return;
-
         try {
             await api.delete(`/admin/allocation/${deleteId}`);
-            setStatus({ type: 'success', message: 'Assignment Removed Successfully' });
-
-            // Refresh List
+            setStatus({ type: 'success', message: 'Assignment Removed' });
             const response = await api.get(`/admin/faculty/${selectedFaculty.id}/allocations`);
             setAllocations(response.data);
-
             setTimeout(() => setStatus({ type: '', message: '' }), 3000);
         } catch (error) {
             setStatus({ type: 'error', message: 'Failed to remove assignment.' });
@@ -107,11 +85,42 @@ const ManageFaculty = () => {
         }
     };
 
-    return (
-        <div className="max-w-6xl mx-auto flex gap-6 h-[calc(100vh-100px)]">
+    // Faculty Unenroll Logic
+    const confirmUnenroll = (e, id) => {
+        e.stopPropagation(); // Don't select the faculty when clicking delete
+        setUnenrollId(id);
+    };
 
-            {/* LEFT COLUMN: Faculty List */}
-            <div className="w-1/3 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+    const executeUnenroll = async () => {
+        if (!unenrollId) return;
+        try {
+            await api.delete(`/admin/faculty/${unenrollId}`);
+            alert('Faculty Member Un-enrolled Successfully');
+
+            // Clear selection if deleted user was selected
+            if (selectedFaculty?.id === unenrollId) {
+                setSelectedFaculty(null);
+                setAllocations([]);
+            }
+
+            loadData(); // Refresh list
+        } catch (e) {
+            alert('Failed to un-enroll faculty.');
+        } finally {
+            setUnenrollId(null);
+        }
+    };
+
+    const formatYear = (str) => {
+        if (!str || str === 'N/A') return 'N/A';
+        return str.replace('_', ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+    };
+
+    return (
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-6 h-[calc(100vh-100px)]">
+
+            {/* Faculty List */}
+            <div className="w-full md:w-1/3 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
                 <div className="p-4 bg-gray-50 border-b border-gray-200 font-bold text-gray-700">
                     Faculty Members ({facultyList.length})
                 </div>
@@ -120,27 +129,36 @@ const ManageFaculty = () => {
                         <div
                             key={f.id}
                             onClick={() => handleSelect(f)}
-                            className={`p-3 rounded-lg cursor-pointer flex items-center transition-colors ${
+                            className={`p-3 rounded-lg cursor-pointer flex items-center justify-between group transition-colors ${
                                 selectedFaculty?.id === f.id ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'
                             }`}
                         >
-                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 mr-3">
-                                <User className="w-5 h-5" />
+                            <div className="flex items-center overflow-hidden">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 mr-3 flex-shrink-0">
+                                    <User className="w-5 h-5" />
+                                </div>
+                                <div className="truncate">
+                                    <p className={`font-semibold text-sm truncate ${selectedFaculty?.id === f.id ? 'text-blue-700' : 'text-gray-800'}`}>
+                                        {f.name}
+                                    </p>
+                                    <p className="text-xs text-gray-500 truncate">{f.email}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className={`font-semibold text-sm ${selectedFaculty?.id === f.id ? 'text-blue-700' : 'text-gray-800'}`}>
-                                    {f.name}
-                                </p>
-                                <p className="text-xs text-gray-500">{f.email}</p>
-                                <p className="text-xs text-gray-400">{f.designation}</p>
-                            </div>
-                            {selectedFaculty?.id === f.id && <CheckCircle className="w-5 h-5 text-blue-600 ml-auto" />}
+
+                            {/* Unenroll Button (Visible on Hover or Selected) */}
+                            <button
+                                onClick={(e) => confirmUnenroll(e, f.id)}
+                                className={`p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all ${selectedFaculty?.id === f.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                                title="Un-enroll Faculty"
+                            >
+                                <UserX className="w-4 h-4" />
+                            </button>
                         </div>
                     ))}
                 </div>
             </div>
 
-            {/* RIGHT COLUMN: Workload Manager */}
+            {/* Workload Manager */}
             <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm p-6 overflow-y-auto">
                 {!selectedFaculty ? (
                     <div className="h-full flex items-center justify-center text-gray-400">
@@ -149,41 +167,30 @@ const ManageFaculty = () => {
                 ) : (
                     <>
                         <h2 className="text-2xl font-bold text-gray-800 mb-1">{selectedFaculty.name}</h2>
-                        <p className="text-gray-500 mb-6">{selectedFaculty.designation} • ID: {selectedFaculty.id}</p>
+                        <p className="text-gray-500 mb-6">{selectedFaculty.designation}</p>
 
-                        {/* STATUS BANNER (TOAST) */}
                         {status.message && (
-                            <div className={`p-4 mb-6 rounded-lg flex items-center border ${
-                                status.type === 'success'
-                                    ? 'bg-green-50 text-green-700 border-green-200'
-                                    : 'bg-red-50 text-red-700 border-red-200'
+                            <div className={`p-3 mb-6 rounded-lg text-sm flex items-center ${
+                                status.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
                             }`}>
-                                {status.type === 'success' ? (
-                                    <CheckCircle className="w-5 h-5 mr-3" />
-                                ) : (
-                                    <AlertCircle className="w-5 h-5 mr-3" />
-                                )}
                                 <span className="font-medium">{status.message}</span>
                             </div>
                         )}
 
-                        {/* Current List */}
                         <h3 className="font-semibold text-gray-700 mb-3">Current Assignments</h3>
                         <div className="bg-gray-50 rounded-lg border border-gray-200 mb-8 overflow-hidden">
                             {allocations.length === 0 ? (
                                 <p className="p-4 text-gray-500 text-sm">No subjects assigned.</p>
                             ) : (
                                 allocations.map(a => (
-                                    <div key={a.id} className="p-4 flex justify-between items-center border-b last:border-0 border-gray-200 hover:bg-white transition-colors">
+                                    <div key={a.id} className="p-4 flex justify-between items-center border-b last:border-0 border-gray-200">
                                         <div>
-                                            <p className="font-bold text-gray-800">{a.subjectName} <span className="text-gray-400 text-xs font-normal">({a.subjectCode})</span></p>
-                                            <p className="text-xs text-gray-500">{a.className} • Div {a.division}</p>
+                                            <p className="font-bold text-gray-800">{a.subjectName} <span className="text-gray-400 text-xs">({a.subjectCode})</span></p>
+                                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full mt-1 inline-block">
+                                                {formatYear(a.className)}
+                                            </span>
                                         </div>
-                                        <button
-                                            onClick={() => confirmDelete(a.id)}
-                                            className="text-red-500 hover:bg-red-100 p-2 rounded-lg transition-colors"
-                                            title="Remove Assignment"
-                                        >
+                                        <button onClick={() => setDeleteId(a.id)} className="text-red-500 hover:bg-red-100 p-2 rounded-lg">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
@@ -191,30 +198,24 @@ const ManageFaculty = () => {
                             )}
                         </div>
 
-                        {/* Add New Form */}
                         <h3 className="font-semibold text-gray-700 mb-3">Assign New Subject</h3>
                         <form onSubmit={handleAdd} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs text-gray-500 mb-1 font-medium">Subject</label>
-                                    <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="p-2.5 border rounded-lg w-full bg-white text-sm" required>
-                                        <option value="">-- Select Subject --</option>
-                                        {subjects.map(s => (
-                                            <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-xs text-gray-500 mb-1 font-medium">Class Batch</label>
-                                    <select value={classId} onChange={(e) => setClassId(e.target.value)} className="p-2.5 border rounded-lg w-full bg-white text-sm" required>
-                                        <option value="">-- Select Class --</option>
-                                        {classes.map(c => (
-                                            <option key={c.id} value={c.id}>{c.batchName} ({c.division})</option>
-                                        ))}
-                                    </select>
-                                </div>
+                            <div>
+                                <select
+                                    value={subjectId}
+                                    onChange={(e) => setSubjectId(e.target.value)}
+                                    className="p-2.5 border rounded-lg w-full bg-white text-sm"
+                                    required
+                                >
+                                    <option value="">-- Choose Subject --</option>
+                                    {subjects.map(s => (
+                                        <option key={s.id} value={s.id}>
+                                            {s.name} ({s.code}) - {formatYear(s.academicYear)}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-                            <button type="submit" className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center transition-colors shadow-sm">
+                            <button type="submit" className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center transition-colors">
                                 <Plus className="w-4 h-4 mr-2" /> Assign Subject
                             </button>
                         </form>
@@ -222,34 +223,35 @@ const ManageFaculty = () => {
                 )}
             </div>
 
-            {/* Custom Delete Confirmation Modal */}
+            {/* Modal: Delete Allocation */}
             {deleteId && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
-                    <div className="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full border border-gray-200">
-                        <h3 className="text-lg font-bold mb-2 text-gray-900">Remove Subject?</h3>
-                        <p className="text-gray-600 mb-6 text-sm">
-                            Are you sure you want to un-assign this subject from the faculty member?
-                        </p>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full">
+                        <h3 className="text-lg font-bold mb-4">Remove Subject?</h3>
                         <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setDeleteId(null)}
-                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={executeDelete}
-                                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm font-medium transition-colors shadow-sm"
-                            >
-                                Yes, Remove
-                            </button>
+                            <button onClick={() => setDeleteId(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+                            <button onClick={executeAllocationDelete} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Remove</button>
                         </div>
                     </div>
                 </div>
             )}
 
+            {/* Modal: Unenroll Faculty */}
+            {unenrollId && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full border-2 border-red-100">
+                        <h3 className="text-lg font-bold mb-2 text-red-600">Un-enroll Faculty?</h3>
+                        <p className="text-gray-600 mb-6 text-sm">
+                            This will delete their account and remove all subject allocations. This cannot be undone.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button onClick={() => setUnenrollId(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+                            <button onClick={executeUnenroll} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Yes, Delete</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
-
 export default ManageFaculty;

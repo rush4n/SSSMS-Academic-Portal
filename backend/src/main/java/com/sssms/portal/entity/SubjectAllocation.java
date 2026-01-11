@@ -22,7 +22,4 @@
      @JoinColumn(name = "subject_id")
      private Subject subject;
 
-     @ManyToOne
-     @JoinColumn(name = "class_id")
-     private ClassBatch classBatch;
  }

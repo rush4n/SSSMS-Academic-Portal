@@ -5,5 +5,4 @@ import lombok.Data;
 public class AllocationRequest {
     private Long facultyId;
     private Long subjectId;
-    private Long classId;
 }

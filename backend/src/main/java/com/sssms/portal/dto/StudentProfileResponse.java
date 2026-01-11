@@ -13,7 +13,7 @@ public class StudentProfileResponse {
     private String email;
     private String prn;
     private String department;
-    private int currentYear;
+    private String currentYear;
     private String phoneNumber;
     private String address;
     private LocalDate dob;

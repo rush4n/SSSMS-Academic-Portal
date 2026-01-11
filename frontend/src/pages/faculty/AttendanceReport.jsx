@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { BarChart3, Calendar, ArrowLeft, Download } from 'lucide-react';
+import { BarChart3, Calendar, ArrowLeft, FileSpreadsheet } from 'lucide-react';
 
 const AttendanceReport = () => {
     const { id } = useParams(); // Allocation ID
@@ -34,9 +34,30 @@ const AttendanceReport = () => {
         fetchReport();
     }, []);
 
+    const handleDownload = async () => {
+        try {
+            let url = `/faculty/report/download/${id}`;
+            if (startDate && endDate) {
+                url += `?startDate=${startDate}&endDate=${endDate}`;
+            }
+
+            const response = await api.get(url, { responseType: 'blob' });
+
+            const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.setAttribute('download', `${data?.subjectName || 'Attendance'}_Report.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            alert("Download failed. Please try again.");
+        }
+    };
+
     return (
-        <div className="max-w-5xl mx-auto">
-            <button onClick={() => navigate(-1)} className="mb-6 flex items-center text-gray-600 hover:text-blue-600">
+        <div className="max-w-5xl mx-auto pb-10">
+            <button onClick={() => navigate(-1)} className="mb-6 flex items-center text-gray-600 hover:text-blue-600 transition-colors">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back
             </button>
 
@@ -49,20 +70,20 @@ const AttendanceReport = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="flex gap-2 items-center bg-white p-2 rounded-lg border shadow-sm">
+                <div className="flex gap-2 items-center bg-white p-2 rounded-lg border shadow-sm flex-wrap">
                     <span className="text-xs font-bold text-gray-500 uppercase px-2">Filter:</span>
                     <input
                         type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
-                        className="border rounded p-1 text-sm"
+                        className="border rounded p-1 text-sm outline-none"
                     />
                     <span className="text-gray-400">-</span>
                     <input
                         type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
-                        className="border rounded p-1 text-sm"
+                        className="border rounded p-1 text-sm outline-none"
                     />
                     <button
                         onClick={fetchReport}
-                        className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700"
+                        className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700 transition-colors"
                     >
                         Apply
                     </button>
@@ -80,58 +101,74 @@ const AttendanceReport = () => {
             ) : (
                 <>
                     {/* Summary Cards */}
-                    <div className="grid grid-cols-3 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                             <p className="text-gray-500 text-xs font-bold uppercase">Total Sessions</p>
-                            <p className="text-3xl font-bold text-gray-900">{data?.totalSessionsHeld}</p>
+                            <p className="text-3xl font-bold text-gray-900 mt-1">{data?.totalSessionsHeld}</p>
                             <p className="text-xs text-gray-400 mt-1">{data?.range}</p>
                         </div>
                         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                             <p className="text-gray-500 text-xs font-bold uppercase">Average Attendance</p>
-                            <p className="text-3xl font-bold text-blue-600">
+                            <p className="text-3xl font-bold text-blue-600 mt-1">
                                 {data?.studentStats.length > 0
                                     ? Math.round(data.studentStats.reduce((acc, s) => acc + s.percentage, 0) / data.studentStats.length)
                                     : 0}%
                             </p>
                         </div>
+
+                        {/* Download Card */}
+                        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between items-start">
+                            <div>
+                                <p className="text-gray-500 text-xs font-bold uppercase">Export Data</p>
+                                <p className="text-xs text-gray-400 mt-1">Download report as CSV</p>
+                            </div>
+                            <button
+                                onClick={handleDownload}
+                                className="mt-3 w-full bg-green-50 text-green-700 hover:bg-green-100 py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center transition-colors border border-green-200"
+                            >
+                                <FileSpreadsheet className="w-4 h-4 mr-2" /> Download CSV
+                            </button>
+                        </div>
                     </div>
 
                     {/* Data Table */}
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 border-b border-gray-200 font-semibold text-gray-600 uppercase">
-                            <tr>
-                                <th className="p-4">Student Name</th>
-                                <th className="p-4">PRN</th>
-                                <th className="p-4">Present / Total</th>
-                                <th className="p-4">Percentage</th>
-                                <th className="p-4">Status</th>
-                            </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                            {data?.studentStats.map((s, i) => (
-                                <tr key={i} className="hover:bg-gray-50">
-                                    <td className="p-4 font-medium text-gray-900">{s.studentName}</td>
-                                    <td className="p-4 text-gray-500 font-mono">{s.prn}</td>
-                                    <td className="p-4 text-gray-700">
-                                        <span className="font-bold">{s.sessionsAttended}</span> / {data.totalSessionsHeld}
-                                    </td>
-                                    <td className="p-4 font-bold">
-                                        {s.percentage}%
-                                    </td>
-                                    <td className="p-4">
-                                    <span className={`px-2 py-1 rounded text-xs font-bold ${
-                                        s.percentage >= 75 ? 'bg-green-100 text-green-700' :
-                                            s.percentage >= 50 ? 'bg-yellow-100 text-yellow-700' :
-                                                'bg-red-100 text-red-700'
-                                    }`}>
-                                        {s.percentage >= 75 ? 'Good' : s.percentage >= 50 ? 'Warning' : 'Critical'}
-                                    </span>
-                                    </td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm whitespace-nowrap">
+                                <thead className="bg-gray-50 border-b border-gray-200 font-semibold text-gray-600 uppercase">
+                                <tr>
+                                    <th className="p-4">Student Name</th>
+                                    <th className="p-4">PRN</th>
+                                    <th className="p-4">Present / Total</th>
+                                    <th className="p-4">Percentage</th>
+                                    <th className="p-4">Status</th>
                                 </tr>
-                            ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                {data?.studentStats.map((s, i) => (
+                                    <tr key={i} className="hover:bg-gray-50 transition-colors">
+                                        <td className="p-4 font-medium text-gray-900">{s.studentName}</td>
+                                        <td className="p-4 text-gray-500 font-mono">{s.prn}</td>
+                                        <td className="p-4 text-gray-700">
+                                            <span className="font-bold">{s.sessionsAttended}</span> / {data.totalSessionsHeld}
+                                        </td>
+                                        <td className="p-4 font-bold">
+                                            {s.percentage}%
+                                        </td>
+                                        <td className="p-4">
+                                        <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                            s.percentage >= 75 ? 'bg-green-100 text-green-700' :
+                                                s.percentage >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                                                    'bg-red-100 text-red-700'
+                                        }`}>
+                                            {s.percentage >= 75 ? 'Good' : s.percentage >= 50 ? 'Warning' : 'Critical'}
+                                        </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </>
             )}

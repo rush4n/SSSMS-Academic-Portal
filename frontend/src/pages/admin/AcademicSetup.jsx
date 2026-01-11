@@ -1,50 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
-import { BookOpen, Users, Plus, CheckCircle, XCircle } from 'lucide-react';
+import { BookOpen, Plus, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 
 const AcademicSetup = () => {
-    // Subject state (No semester)
-    const [subject, setSubject] = useState({ name: '', code: '', department: 'Architecture' });
+    const [subject, setSubject] = useState({
+        name: '',
+        code: '',
+        department: 'Architecture',
+        academicYear: 'FIRST_YEAR'
+    });
 
-    // Batch state (Includes semester)
-    const [batch, setBatch] = useState({ batchName: '', division: '', academicYear: 2025, currentSemester: '' });
+    const [existingSubjects, setExistingSubjects] = useState([]);
+    const [status, setStatus] = useState(null);
 
-    // Separate status for each form
-    const [subjectStatus, setSubjectStatus] = useState(null);
-    const [batchStatus, setBatchStatus] = useState(null);
+    const fetchSubjects = async () => {
+        try {
+            const res = await api.get('/admin/subjects');
+            setExistingSubjects(res.data);
+        } catch (e) {
+            console.error("Failed to load subjects");
+        }
+    };
+
+    useEffect(() => {
+        fetchSubjects();
+    }, []);
 
     const handleSubject = async (e) => {
         e.preventDefault();
-        setSubjectStatus(null);
+        setStatus(null);
         try {
             await api.post('/admin/subjects', subject);
-            setSubjectStatus({ type: 'success', msg: 'Subject Created Successfully!' });
-            // Reset form
-            setSubject({ name: '', code: '', department: 'Architecture' });
-            setTimeout(() => setSubjectStatus(null), 3000);
+            setStatus({ type: 'success', msg: 'Subject Created Successfully!' });
+            setSubject({ name: '', code: '', department: 'Architecture', academicYear: 'FIRST_YEAR' });
+            fetchSubjects(); // Refresh List
+            setTimeout(() => setStatus(null), 3000);
         } catch(e) {
-            setSubjectStatus({ type: 'error', msg: 'Failed to create subject.' });
+            setStatus({ type: 'error', msg: 'Failed to create subject.' });
         }
     };
 
-    const handleBatch = async (e) => {
-        e.preventDefault();
-        setBatchStatus(null);
+    const handleDelete = async (id) => {
+        if(!window.confirm("Are you sure you want to delete this subject?")) return;
         try {
-            await api.post('/admin/classes', batch);
-            setBatchStatus({ type: 'success', msg: 'Class Batch Created Successfully!' });
-            setBatch({ batchName: '', division: '', academicYear: 2025, currentSemester: '' });
-            setTimeout(() => setBatchStatus(null), 3000);
+            await api.delete(`/admin/subject/${id}`);
+            fetchSubjects();
         } catch(e) {
-            setBatchStatus({ type: 'error', msg: 'Failed to create class.' });
+            alert("Failed to delete subject");
         }
     };
 
-    // Helper for Status Banner
+    const formatYear = (str) => str.replace('_', ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+
     const StatusBanner = ({ status }) => {
         if (!status) return null;
         return (
-            <div className={`p-4 mb-4 rounded-lg flex items-center border ${
+            <div className={`p-4 mb-6 rounded-lg flex items-center border ${
                 status.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
             }`}>
                 {status.type === 'success' ? <CheckCircle className="w-5 h-5 mr-3"/> : <XCircle className="w-5 h-5 mr-3"/>}
@@ -54,14 +65,13 @@ const AcademicSetup = () => {
     };
 
     return (
-        <div className="max-w-3xl mx-auto space-y-8">
-
+        <div className="max-w-4xl mx-auto space-y-8">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Academic Setup</h1>
-                <p className="text-gray-600">Define the core structure of the college.</p>
+                <p className="text-gray-600">Define the curriculum and subjects for each year.</p>
             </div>
 
-            {/* 1. Create Subject Section */}
+            {/* Create Subject Section */}
             <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
                 <h2 className="text-xl font-bold mb-6 flex items-center text-gray-900">
                     <div className="bg-blue-50 p-2 rounded-lg mr-3 text-blue-600">
@@ -70,14 +80,14 @@ const AcademicSetup = () => {
                     Add New Subject
                 </h2>
 
-                <StatusBanner status={subjectStatus} />
+                <StatusBanner status={status} />
 
-                <form onSubmit={handleSubject} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={handleSubject} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-1">Subject Name</label>
                             <input
-                                placeholder="e.g. Design III"
+                                placeholder="e.g. History of Architecture III"
                                 value={subject.name} onChange={e=>setSubject({...subject, name: e.target.value})}
                                 className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required
                             />
@@ -94,67 +104,72 @@ const AcademicSetup = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
                             <select
                                 value={subject.department} onChange={e=>setSubject({...subject, department: e.target.value})}
-                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                             >
                                 <option value="Architecture">Architecture</option>
-                                <option value="Interior Design">Interior Design</option>
+                            </select>
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Assign to Year</label>
+                            <select
+                                value={subject.academicYear} onChange={e=>setSubject({...subject, academicYear: e.target.value})}
+                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                            >
+                                <option value="FIRST_YEAR">First Year</option>
+                                <option value="SECOND_YEAR">Second Year</option>
+                                <option value="THIRD_YEAR">Third Year</option>
+                                <option value="FOURTH_YEAR">Fourth Year</option>
+                                <option value="FIFTH_YEAR">Fifth Year</option>
                             </select>
                         </div>
                     </div>
                     <div className="flex justify-end pt-2">
-                        <button type="submit" className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm">
-                            Create Subject
+                        <button type="submit" className="bg-blue-600 text-white px-8 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm flex items-center">
+                            <Plus className="w-4 h-4 mr-2" /> Create Subject
                         </button>
                     </div>
                 </form>
             </div>
 
-            {/* 2. Create Class Section */}
-            <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
-                <h2 className="text-xl font-bold mb-6 flex items-center text-gray-900">
-                    <div className="bg-green-50 p-2 rounded-lg mr-3 text-green-600">
-                        <Users className="w-6 h-6" />
-                    </div>
-                    Add Class Batch
-                </h2>
-
-                <StatusBanner status={batchStatus} />
-
-                <form onSubmit={handleBatch} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Batch Name</label>
-                            <input
-                                placeholder="e.g. Third Year"
-                                value={batch.batchName} onChange={e=>setBatch({...batch, batchName: e.target.value})}
-                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Division</label>
-                            <input
-                                placeholder="e.g. A"
-                                value={batch.division} onChange={e=>setBatch({...batch, division: e.target.value})}
-                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Current Semester</label>
-                            <input
-                                type="number" placeholder="e.g. 5"
-                                value={batch.currentSemester} onChange={e=>setBatch({...batch, currentSemester: e.target.value})}
-                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" required
-                            />
-                        </div>
-                    </div>
-                    <div className="flex justify-end pt-2">
-                        <button type="submit" className="bg-green-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-green-700 transition-colors shadow-sm">
-                            Create Class
-                        </button>
-                    </div>
-                </form>
+            {/* List of Existing Subjects */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-gray-200 bg-gray-50">
+                    <h3 className="text-lg font-semibold text-gray-800">Existing Subjects</h3>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-white border-b border-gray-200 text-gray-500 uppercase tracking-wider font-semibold">
+                        <tr>
+                            <th className="p-4">Code</th>
+                            <th className="p-4">Subject Name</th>
+                            <th className="p-4">Year</th>
+                            <th className="p-4 text-right">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                        {existingSubjects.map(sub => (
+                            <tr key={sub.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="p-4 font-mono text-gray-500">{sub.code}</td>
+                                <td className="p-4 font-medium text-gray-900">{sub.name}</td>
+                                <td className="p-4">
+                                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-bold">
+                                            {formatYear(sub.academicYear)}
+                                        </span>
+                                </td>
+                                <td className="p-4 text-right">
+                                    <button
+                                        onClick={() => handleDelete(sub.id)}
+                                        className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-
         </div>
     );
 };

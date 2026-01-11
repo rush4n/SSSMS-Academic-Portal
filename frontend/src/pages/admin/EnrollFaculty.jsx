@@ -172,7 +172,6 @@ const EnrollFaculty = () => {
                 className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               >
                 <option value="Architecture">Architecture</option>
-                <option value="Interior Design">Interior Design</option>
               </select>
             </div>
             <div>

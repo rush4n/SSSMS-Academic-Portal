@@ -1,30 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
-import { Search, Edit2, Save, X, User, Filter } from 'lucide-react';
+import { Search, Edit2, Save, X, User, BookOpen, Plus, Trash2, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
 
 const ManageStudents = () => {
     // Data State
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Filter State
+    // Filters
     const [search, setSearch] = useState('');
-    const [deptFilter, setDeptFilter] = useState('');
     const [yearFilter, setYearFilter] = useState('');
 
     // Edit State
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState({});
 
-    // 1. Fetch Data (with filters)
+    // UI Feedback State
+    const [status, setStatus] = useState(null); // Main page status
+    const [deleteId, setDeleteId] = useState(null); // For Delete Modal
+
+    // --- COURSE MODAL STATE ---
+    const [courseModalOpen, setCourseModalOpen] = useState(false);
+    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [allAllocations, setAllAllocations] = useState([]);
+    const [selectedAllocationId, setSelectedAllocationId] = useState('');
+    const [modalStatus, setModalStatus] = useState(null);
+
+    // 1. Fetch Students
     const fetchStudents = async () => {
         setLoading(true);
         try {
-            // Build Query String
             const params = new URLSearchParams();
-            if (deptFilter) params.append('department', deptFilter);
             if (yearFilter) params.append('year', yearFilter);
-
             const res = await api.get(`/admin/students?${params.toString()}`);
             setStudents(res.data);
         } catch (e) {
@@ -34,54 +41,128 @@ const ManageStudents = () => {
         }
     };
 
-    // Re-fetch when filters change
     useEffect(() => {
         fetchStudents();
-    }, [deptFilter, yearFilter]);
+    }, [yearFilter]);
 
-    // Client-side Search (For Name/PRN)
+    const confirmDelete = (id) => {
+        setDeleteId(id);
+    };
+
+    const executeDelete = async () => {
+        if (!deleteId) return;
+
+        try {
+            await api.delete(`/admin/student/${deleteId}`);
+            setStatus({ type: 'success', msg: "Student Un-enrolled Successfully" });
+            fetchStudents();
+        } catch(e) {
+            setStatus({ type: 'error', msg: "Delete Failed. " + (e.response?.data?.message || "") });
+        } finally {
+            setDeleteId(null);
+            setTimeout(() => setStatus(null), 3000);
+        }
+    };
+
+    const openCourseManager = async (student) => {
+        setSelectedStudent(student);
+        setCourseModalOpen(true);
+        setModalStatus(null);
+        setSelectedAllocationId('');
+        try {
+            const res = await api.get('/admin/allocations/all');
+            setAllAllocations(res.data);
+        } catch (e) {
+            setModalStatus({ type: 'error', msg: "Failed to load course list" });
+        }
+    };
+
+    const assignCourse = async () => {
+        if (!selectedAllocationId) return;
+        setModalStatus(null);
+
+        try {
+            await api.post(`/admin/student/${selectedStudent.id}/course/${selectedAllocationId}`);
+            setModalStatus({ type: 'success', msg: "Course Assigned!" });
+            fetchStudents();
+            const addedCourse = allAllocations.find(a => a.id === parseInt(selectedAllocationId));
+            const updatedExtras = [...(selectedStudent.extraCourses || [])];
+            updatedExtras.push({
+                id: addedCourse.id,
+                subject: { name: addedCourse.subjectName, code: addedCourse.subjectCode },
+                faculty: { firstName: addedCourse.facultyName.split(' ')[0], lastName: addedCourse.facultyName.split(' ')[1] || '' }
+            });
+            setSelectedStudent({ ...selectedStudent, extraCourses: updatedExtras });
+        } catch (e) {
+            setModalStatus({ type: 'error', msg: "Failed to assign." });
+        }
+    };
+
+    const removeCourse = async (allocationId) => {
+        // We can keep window.confirm for the sub-modal action, or replace it too.
+        // For now, let's stick to window.confirm inside the modal to avoid modal-on-modal complexity.
+        if(!window.confirm("Remove this extra course?")) return;
+
+        setModalStatus(null);
+        try {
+            await api.delete(`/admin/student/${selectedStudent.id}/course/${allocationId}`);
+            setModalStatus({ type: 'success', msg: "Course Removed" });
+            fetchStudents();
+            const updatedExtras = selectedStudent.extraCourses.filter(c => c.id !== allocationId);
+            setSelectedStudent({ ...selectedStudent, extraCourses: updatedExtras });
+        } catch (e) {
+            setModalStatus({ type: 'error', msg: "Failed to remove." });
+        }
+    };
+
     const filteredStudents = students.filter(s =>
         s.firstName.toLowerCase().includes(search.toLowerCase()) ||
         s.lastName.toLowerCase().includes(search.toLowerCase()) ||
         s.prn.includes(search)
     );
 
-    // Edit Handlers
-    const startEdit = (student) => {
-        setEditingId(student.id);
-        setEditForm({ ...student });
-    };
-
-    const handleEditChange = (e) => {
-        setEditForm({ ...editForm, [e.target.name]: e.target.value });
-    };
+    const startEdit = (student) => { setEditingId(student.id); setEditForm({ ...student }); };
+    const handleEditChange = (e) => { setEditForm({ ...editForm, [e.target.name]: e.target.value }); };
 
     const saveEdit = async () => {
         try {
             await api.put(`/admin/student/${editingId}`, editForm);
             setEditingId(null);
-            fetchStudents(); // Refresh data
-        } catch (e) {
-            alert("Update failed");
+            setStatus({ type: 'success', msg: "Student Updated" });
+            fetchStudents();
+            setTimeout(() => setStatus(null), 3000);
         }
+        catch (e) { setStatus({ type: 'error', msg: "Update Failed" }); }
+    };
+
+    const formatYear = (enumStr) => {
+        if(!enumStr) return "N/A";
+        return enumStr.replace('_', ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
     };
 
     return (
         <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-end mb-8">
+            <div className="flex justify-between items-end mb-6">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Student Directory</h1>
-                    <p className="text-gray-600 mt-1">Manage enrollments and class assignments.</p>
+                    <p className="text-gray-600 mt-1">Manage enrollments and individual course assignments.</p>
                 </div>
                 <div className="text-sm text-gray-500">
-                    Total Students: <span className="font-bold text-gray-900">{filteredStudents.length}</span>
+                    Total: <span className="font-bold text-gray-900">{filteredStudents.length}</span>
                 </div>
             </div>
 
-            {/* Toolbar: Search & Filter */}
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 flex flex-wrap gap-4 items-center">
+            {/* Main Page Status Toast */}
+            {status && (
+                <div className={`p-4 mb-6 rounded-lg flex items-center border ${
+                    status.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
+                }`}>
+                    {status.type === 'success' ? <CheckCircle className="w-5 h-5 mr-3"/> : <AlertCircle className="w-5 h-5 mr-3"/>}
+                    <span className="font-medium">{status.msg}</span>
+                </div>
+            )}
 
-                {/* Search */}
+            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 flex flex-wrap gap-4 items-center">
                 <div className="relative flex-1 min-w-[200px]">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
@@ -90,118 +171,189 @@ const ManageStudents = () => {
                         className="w-full pl-9 p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                     />
                 </div>
-
-                {/* Department Filter */}
-                <select
-                    value={deptFilter} onChange={e => setDeptFilter(e.target.value)}
-                    className="p-2 border rounded-lg text-sm bg-gray-50"
-                >
-                    <option value="">All Departments</option>
-                    <option value="Architecture">Architecture</option>
-                    <option value="Interior Design">Interior Design</option>
-                </select>
-
-                {/* Year Filter */}
-                <select
-                    value={yearFilter} onChange={e => setYearFilter(e.target.value)}
-                    className="p-2 border rounded-lg text-sm bg-gray-50"
-                >
+                <select value={yearFilter} onChange={e => setYearFilter(e.target.value)} className="p-2 border rounded-lg text-sm bg-gray-50">
                     <option value="">All Years</option>
-                    <option value="1">Year 1 (Sem 1-2)</option>
-                    <option value="2">Year 2 (Sem 3-4)</option>
-                    <option value="3">Year 3 (Sem 5-6)</option>
-                    <option value="4">Year 4 (Sem 7-8)</option>
-                    <option value="5">Year 5 (Sem 9-10)</option>
+                    <option value="FIRST_YEAR">First Year</option>
+                    <option value="SECOND_YEAR">Second Year</option>
+                    <option value="THIRD_YEAR">Third Year</option>
+                    <option value="FOURTH_YEAR">Fourth Year</option>
+                    <option value="FIFTH_YEAR">Fifth Year</option>
                 </select>
-
-                <button onClick={() => {setDeptFilter(''); setYearFilter(''); setSearch('')}} className="text-sm text-red-500 hover:underline">
-                    Reset
-                </button>
+                <button onClick={() => {setYearFilter(''); setSearch('')}} className="text-sm text-red-500 hover:underline">Reset</button>
             </div>
 
-            {/* Data Table */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm whitespace-nowrap">
-                    <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase tracking-wider font-semibold">
-                    <tr>
-                        <th className="p-4">Student Name</th>
-                        <th className="p-4">PRN / ID</th>
-                        <th className="p-4">Current Class</th>
-                        <th className="p-4">Department</th>
-                        <th className="p-4 text-right">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                    {loading ? (
-                        <tr><td colSpan="5" className="p-8 text-center text-gray-500">Loading directory...</td></tr>
-                    ) : filteredStudents.length === 0 ? (
-                        <tr><td colSpan="5" className="p-8 text-center text-gray-500">No students found.</td></tr>
-                    ) : (
-                        filteredStudents.map(student => (
-                            <tr key={student.id} className="hover:bg-gray-50 transition-colors">
-
-                                {/* EDIT MODE */}
-                                {editingId === student.id ? (
-                                    <>
-                                        <td className="p-4">
-                                            <input name="firstName" value={editForm.firstName} onChange={handleEditChange} className="border p-1 rounded w-20 mr-1" placeholder="First" />
-                                            <input name="lastName" value={editForm.lastName} onChange={handleEditChange} className="border p-1 rounded w-20" placeholder="Last" />
-                                        </td>
-                                        <td className="p-4 text-gray-400">{student.prn}</td>
-                                        <td className="p-4">
-                                            <select name="currentYear" value={editForm.currentYear} onChange={handleEditChange} className="border p-1 rounded bg-yellow-50 border-yellow-300">
-                                                <option value="1">Year 1</option>
-                                                <option value="2">Year 2</option>
-                                                <option value="3">Year 3</option>
-                                                <option value="4">Year 4</option>
-                                                <option value="5">Year 5</option>
-                                            </select>
-                                        </td>
-                                        <td className="p-4">
-                                            <select name="department" value={editForm.department} onChange={handleEditChange} className="border p-1 rounded">
-                                                <option value="Architecture">Architecture</option>
-                                                <option value="Interior Design">Interior Design</option>
-                                            </select>
-                                        </td>
-                                        <td className="p-4 text-right flex justify-end gap-2">
-                                            <button onClick={saveEdit} className="text-green-600 hover:bg-green-100 p-1.5 rounded"><Save className="w-4 h-4"/></button>
-                                            <button onClick={() => setEditingId(null)} className="text-gray-400 hover:bg-gray-100 p-1.5 rounded"><X className="w-4 h-4"/></button>
-                                        </td>
-                                    </>
-                                ) : (
-                                    /* VIEW MODE */
-                                    <>
-                                        <td className="p-4 font-medium text-gray-900 flex items-center">
-                                            <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3 font-bold text-xs">
-                                                {student.firstName[0]}{student.lastName[0]}
-                                            </div>
-                                            {student.firstName} {student.lastName}
-                                        </td>
-                                        <td className="p-4 text-gray-500 font-mono">{student.prn}</td>
-                                        <td className="p-4">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    Year {student.currentYear}
-                                </span>
-                                        </td>
-                                        <td className="p-4 text-gray-600">{student.department}</td>
-                                        <td className="p-4 text-right">
-                                            <button
-                                                onClick={() => startEdit(student)}
-                                                className="text-gray-400 hover:text-blue-600 transition-colors p-2 hover:bg-blue-50 rounded-lg"
-                                            >
-                                                <Edit2 className="w-4 h-4" />
-                                            </button>
-                                        </td>
-                                    </>
-                                )}
-                            </tr>
-                        ))
-                    )}
-                    </tbody>
-                </table>
+                    <table className="w-full text-left text-sm whitespace-nowrap">
+                        <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase tracking-wider font-semibold">
+                        <tr>
+                            <th className="p-4">Student Name</th>
+                            <th className="p-4">PRN</th>
+                            <th className="p-4">Standard Class</th>
+                            <th className="p-4">Extra Courses</th>
+                            <th className="p-4 text-right">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                        {loading ? (
+                            <tr><td colSpan="5" className="p-8 text-center text-gray-500">Loading...</td></tr>
+                        ) : filteredStudents.length === 0 ? (
+                            <tr><td colSpan="5" className="p-8 text-center text-gray-500">No students found.</td></tr>
+                        ) : (
+                            filteredStudents.map(student => (
+                                <tr key={student.id} className="hover:bg-gray-50 transition-colors">
+                                    {editingId === student.id ? (
+                                        <>
+                                            <td className="p-4">
+                                                <input name="firstName" value={editForm.firstName} onChange={handleEditChange} className="border p-1 rounded w-24 mr-2" />
+                                                <input name="lastName" value={editForm.lastName} onChange={handleEditChange} className="border p-1 rounded w-24" />
+                                            </td>
+                                            <td className="p-4 text-gray-400">{student.prn}</td>
+                                            <td className="p-4">
+                                                <select name="academicYear" value={editForm.academicYear} onChange={handleEditChange} className="border p-1 rounded bg-yellow-50 border-yellow-300 w-full">
+                                                    <option value="FIRST_YEAR">First Year</option>
+                                                    <option value="SECOND_YEAR">Second Year</option>
+                                                    <option value="THIRD_YEAR">Third Year</option>
+                                                    <option value="FOURTH_YEAR">Fourth Year</option>
+                                                    <option value="FIFTH_YEAR">Fifth Year</option>
+                                                </select>
+                                            </td>
+                                            <td className="p-4">-</td>
+                                            <td className="p-4 text-right flex justify-end gap-2">
+                                                <button onClick={saveEdit} className="text-green-600 hover:bg-green-100 p-1.5 rounded"><Save className="w-4 h-4"/></button>
+                                                <button onClick={() => setEditingId(null)} className="text-red-600 hover:bg-red-100 p-1.5 rounded"><X className="w-4 h-4"/></button>
+                                            </td>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <td className="p-4 font-medium text-gray-900 flex items-center">
+                                                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3 font-bold text-xs">
+                                                    {student.firstName[0]}{student.lastName[0]}
+                                                </div>
+                                                {student.firstName} {student.lastName}
+                                            </td>
+                                            <td className="p-4 text-gray-500 font-mono">{student.prn}</td>
+                                            <td className="p-4">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    {formatYear(student.academicYear)}
+                                                </span>
+                                            </td>
+                                            <td className="p-4">
+                                                {student.extraCourses?.length > 0 ? (
+                                                    <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-bold">
+                                                    {student.extraCourses.length} Custom
+                                                </span>
+                                                ) : <span className="text-gray-400 text-xs">Standard Only</span>}
+                                            </td>
+                                            <td className="p-4 text-right flex justify-end gap-2">
+                                                <button onClick={() => openCourseManager(student)} className="text-purple-600 hover:bg-purple-50 p-2 rounded-lg" title="Manage Courses">
+                                                    <BookOpen className="w-4 h-4" />
+                                                </button>
+                                                <button onClick={() => startEdit(student)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg" title="Edit Profile">
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                                <button onClick={() => confirmDelete(student.id)} className="text-red-600 hover:bg-red-50 p-2 rounded-lg" title="Un-enroll">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </td>
+                                        </>
+                                    )}
+                                </tr>
+                            ))
+                        )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
+
+            {/* CONFIRMATION MODAL */}
+            {deleteId && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+                    <div className="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full border border-gray-200">
+                        <div className="flex items-center text-red-600 mb-4">
+                            <AlertTriangle className="w-6 h-6 mr-2" />
+                            <h3 className="text-lg font-bold">Confirm Un-enrollment</h3>
+                        </div>
+                        <p className="text-gray-600 mb-6 text-sm">
+                            Are you sure you want to un-enroll this student? This will delete all their records (fees, attendance, etc). This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button onClick={() => setDeleteId(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm">
+                                Cancel
+                            </button>
+                            <button onClick={executeDelete} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm font-medium shadow-sm">
+                                Yes, Un-enroll
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* COURSE MODAL */}
+            {courseModalOpen && selectedStudent && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden flex flex-col max-h-[80vh]">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900">Manage Courses</h3>
+                                <p className="text-sm text-gray-500">{selectedStudent.firstName} {selectedStudent.lastName}</p>
+                            </div>
+                            <button onClick={() => setCourseModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-1">
+                            {modalStatus && (
+                                <div className={`p-3 mb-4 rounded-lg text-sm flex items-center ${
+                                    modalStatus.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                                }`}>
+                                    {modalStatus.type === 'success' && <CheckCircle className="w-4 h-4 mr-2"/>}
+                                    {modalStatus.msg}
+                                </div>
+                            )}
+                            <div className="mb-6">
+                                <h4 className="font-semibold text-gray-700 text-sm mb-3 uppercase tracking-wider">Assigned Extra Courses</h4>
+                                {selectedStudent.extraCourses && selectedStudent.extraCourses.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {selectedStudent.extraCourses.map(c => (
+                                            <div key={c.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                                <div>
+                                                    <p className="font-medium text-gray-900 text-sm">{c.subject.name}</p>
+                                                    <p className="text-xs text-gray-500">{c.subject.code}</p>
+                                                </div>
+                                                <button onClick={() => removeCourse(c.id)} className="text-red-500 hover:bg-red-100 p-1.5 rounded transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-gray-500 text-sm">
+                                        No extra courses assigned.
+                                    </div>
+                                )}
+                            </div>
+                            <div className="border-t pt-6">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Assign Additional Course</label>
+                                <div className="flex gap-2">
+                                    <select
+                                        className="border p-2.5 rounded-lg w-full text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none"
+                                        value={selectedAllocationId}
+                                        onChange={(e) => setSelectedAllocationId(e.target.value)}
+                                    >
+                                        <option value="">-- Select Course to Add --</option>
+                                        {allAllocations.map(a => (
+                                            <option key={a.id} value={a.id}>
+                                                {a.subjectName} ({a.subjectCode}) - {formatYear(a.year)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button onClick={assignCourse} disabled={!selectedAllocationId} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50"><Plus className="w-5 h-5" /></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-4 bg-gray-50 border-t border-gray-200 text-right">
+                            <button onClick={() => setCourseModalOpen(false)} className="text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Done</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
@@ -26,6 +28,9 @@ public class Student {
     @Column(unique = true, nullable = false)
     private String prn;
 
+    @Enumerated(EnumType.STRING)
+    private AcademicYear academicYear;
+
     private String firstName;
     private String middleName;
     private String lastName;
@@ -33,6 +38,13 @@ public class Student {
     private LocalDate dob;
     private String phoneNumber;
     private String address;
-    private String department;
-    private int currentYear;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+        @JoinTable(
+            name = "student_extra_courses",
+            joinColumns = @JoinColumn(name = "student_id"),
+            inverseJoinColumns = @JoinColumn(name = "allocation_id")
+        )
+        @Builder.Default
+        private Set<SubjectAllocation> extraCourses = new HashSet<>();
 }

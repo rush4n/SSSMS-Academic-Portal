@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
-import { Upload, FileText, User, Users } from 'lucide-react';
+import { Upload, User, Users, CheckCircle, XCircle } from 'lucide-react';
 
 const ManageTimetables = () => {
     // Data
     const [facultyList, setFacultyList] = useState([]);
-    const [classes, setClasses] = useState([
-        { id: 1, name: "Second Year B.Arch" }, // Mock data (or fetch from API)
-        { id: 2, name: "Third Year B.Arch" }
-    ]);
+    const [years, setYears] = useState([]); // Replaced classes with years
 
     // Selection
     const [uploadType, setUploadType] = useState('CLASS'); // CLASS or FACULTY
@@ -17,27 +14,36 @@ const ManageTimetables = () => {
 
     // UI
     const [status, setStatus] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        // Fetch faculty list
         const loadData = async () => {
             try {
-                const res = await api.get('/admin/faculty/all');
-                setFacultyList(res.data);
-            } catch (e) {}
+                const [facRes, yearRes] = await Promise.all([
+                    api.get('/admin/faculty/all'),
+                    api.get('/admin/years') // Updated Endpoint
+                ]);
+                setFacultyList(facRes.data);
+                setYears(yearRes.data);
+            } catch (e) {
+                console.error("Failed to load dropdowns");
+            }
         };
         loadData();
     }, []);
 
     const handleUpload = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        setStatus(null);
+
         const formData = new FormData();
         formData.append('file', file);
 
         let url = '';
         if(uploadType === 'CLASS') {
             url = '/timetable/upload/class';
-            formData.append('classId', selectedId);
+            formData.append('year', selectedId); // Changed 'classId' to 'year'
         } else {
             url = '/timetable/upload/faculty';
             formData.append('facultyId', selectedId);
@@ -46,10 +52,18 @@ const ManageTimetables = () => {
         try {
             await api.post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' }});
             setStatus({ type: 'success', msg: 'Timetable Uploaded Successfully!' });
+            setFile(null);
+            setSelectedId('');
+            setTimeout(() => setStatus(null), 3000);
         } catch(e) {
             setStatus({ type: 'error', msg: 'Upload Failed.' });
+        } finally {
+            setLoading(false);
         }
     };
+
+    // Helper
+    const formatYear = (str) => str.replace('_', ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
 
     return (
         <div className="max-w-4xl mx-auto">
@@ -58,47 +72,66 @@ const ManageTimetables = () => {
             <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
 
                 {/* Toggle */}
-                <div className="flex gap-4 mb-6">
+                <div className="flex gap-4 mb-8">
                     <button
-                        onClick={() => setUploadType('CLASS')}
-                        className={`flex-1 p-4 rounded-lg border-2 flex items-center justify-center font-bold ${uploadType === 'CLASS' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500'}`}
+                        onClick={() => { setUploadType('CLASS'); setSelectedId(''); }}
+                        className={`flex-1 p-4 rounded-lg border-2 flex items-center justify-center font-bold transition-all ${uploadType === 'CLASS' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
                     >
                         <Users className="w-5 h-5 mr-2" /> Class Timetable
                     </button>
                     <button
-                        onClick={() => setUploadType('FACULTY')}
-                        className={`flex-1 p-4 rounded-lg border-2 flex items-center justify-center font-bold ${uploadType === 'FACULTY' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 text-gray-500'}`}
+                        onClick={() => { setUploadType('FACULTY'); setSelectedId(''); }}
+                        className={`flex-1 p-4 rounded-lg border-2 flex items-center justify-center font-bold transition-all ${uploadType === 'FACULTY' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
                     >
                         <User className="w-5 h-5 mr-2" /> Faculty Timetable
                     </button>
                 </div>
 
-                {status && <div className={`p-4 mb-4 rounded-lg text-center ${status.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100'}`}>{status.msg}</div>}
+                {/* Status Banner */}
+                {status && (
+                    <div className={`p-4 mb-6 rounded-lg flex items-center border ${
+                        status.type === 'success'
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : 'bg-red-50 text-red-700 border-red-200'
+                    }`}>
+                        {status.type === 'success' ? <CheckCircle className="w-5 h-5 mr-3" /> : <XCircle className="w-5 h-5 mr-3" />}
+                        <span className="font-medium">{status.msg}</span>
+                    </div>
+                )}
 
                 <form onSubmit={handleUpload} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Select Target</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Select {uploadType === 'CLASS' ? 'Academic Year' : 'Faculty Member'}
+                        </label>
                         <select
                             value={selectedId} onChange={(e) => setSelectedId(e.target.value)}
-                            className="w-full p-3 border rounded-lg" required
+                            className="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none" required
                         >
                             <option value="">-- Select --</option>
                             {uploadType === 'CLASS'
-                                ? classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)
-                                : facultyList.map(f => <option key={f.id} value={f.id}>{f.name}</option>)
+                                ? years.map((y, i) => <option key={i} value={y}>{formatYear(y)}</option>)
+                                : facultyList.map(f => <option key={f.id} value={f.id}>{f.name} ({f.designation})</option>)
                             }
                         </select>
                     </div>
 
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center bg-gray-50 hover:border-indigo-500 transition-colors cursor-pointer group">
                         <input type="file" accept=".pdf" onChange={(e) => setFile(e.target.files[0])} className="hidden" id="tt-upload" required />
-                        <label htmlFor="tt-upload" className="cursor-pointer block">
-                            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                            <span className="text-gray-600">{file ? file.name : "Click to select PDF"}</span>
+                        <label htmlFor="tt-upload" className="cursor-pointer block w-full h-full">
+                            <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+                            <span className="text-gray-900 font-medium block text-lg">{file ? file.name : "Click to select PDF"}</span>
+                            <span className="text-xs text-gray-500 mt-1 block">Supported: .pdf (Max 10MB)</span>
                         </label>
                     </div>
 
-                    <button type="submit" className="w-full bg-slate-900 text-white py-3 rounded-lg font-bold">Upload PDF</button>
+                    <button
+                        type="submit"
+                        disabled={loading || !file || !selectedId}
+                        className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    >
+                        {loading ? 'Uploading...' : 'Publish Timetable'}
+                    </button>
                 </form>
             </div>
         </div>

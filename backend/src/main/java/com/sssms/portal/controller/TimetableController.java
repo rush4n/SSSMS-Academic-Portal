@@ -21,20 +21,25 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class TimetableController {
 
-    private final ClassBatchRepository classRepository;
+    private final YearMetadataRepository yearRepository;
     private final FacultyRepository facultyRepository;
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final FileStorageService fileStorageService;
 
     @PostMapping("/upload/class")
-    public ResponseEntity<?> uploadClassTimetable(@RequestParam("classId") Long classId, @RequestParam("file") MultipartFile file) {
-        String fileName = fileStorageService.storeFile(file);
-        ClassBatch batch = classRepository.findById(classId).orElseThrow();
-        batch.setTimetablePdf(fileName);
-        classRepository.save(batch);
-        return ResponseEntity.ok("Class Timetable Uploaded");
-    }
+        public ResponseEntity<?> uploadClassTimetable(@RequestParam("year") AcademicYear year, @RequestParam("file") MultipartFile file) {
+            String fileName = fileStorageService.storeFile(file);
+
+            YearMetadata metadata = yearRepository.findById(year)
+                    .orElse(YearMetadata.builder().id(year).build());
+
+            metadata.setTimetablePdf(fileName);
+            yearRepository.save(metadata);
+
+            return ResponseEntity.ok("Timetable Uploaded for " + year);
+        }
+
 
     @PostMapping("/upload/faculty")
     public ResponseEntity<?> uploadFacultyTimetable(@RequestParam("facultyId") Long facultyId, @RequestParam("file") MultipartFile file) {
@@ -46,20 +51,19 @@ public class TimetableController {
     }
 
     @GetMapping("/student/me")
-    public ResponseEntity<?> getMyClassTimetable(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) return ResponseEntity.status(401).build();
-        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-        Student student = studentRepository.findById(user.getUserId()).orElseThrow();
+        public ResponseEntity<?> getMyClassTimetable(@AuthenticationPrincipal UserDetails userDetails) {
+            if (userDetails == null) return ResponseEntity.status(401).build();
+            User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+            Student student = studentRepository.findById(user.getUserId()).orElseThrow();
 
-        ClassBatch batch = classRepository.findAll().stream()
-                .filter(b -> b.getCurrentSemester() == student.getCurrentYear())
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Class not found"));
+            YearMetadata metadata = yearRepository.findById(student.getAcademicYear()).orElse(null);
 
-        if (batch.getTimetablePdf() == null) return ResponseEntity.ok(Map.of("exists", false));
+            if (metadata == null || metadata.getTimetablePdf() == null) {
+                return ResponseEntity.ok(Map.of("exists", false));
+            }
 
-        return ResponseEntity.ok(Map.of("exists", true, "fileName", batch.getTimetablePdf()));
-    }
+            return ResponseEntity.ok(Map.of("exists", true, "fileName", metadata.getTimetablePdf()));
+        }
 
     @GetMapping("/faculty/me")
     public ResponseEntity<?> getMyPersonalTimetable(@AuthenticationPrincipal UserDetails userDetails) {

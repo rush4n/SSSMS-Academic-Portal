@@ -3,7 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 import {
     LayoutDashboard, User, LogOut, BookOpen, Calendar, Target,
-    FileText, Clock, Bell, Menu, X // Import Menu and X icons
+    FileText, Clock, Bell, Menu, X
 } from 'lucide-react';
 
 const StudentLayout = () => {
@@ -11,7 +11,6 @@ const StudentLayout = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // State for Mobile Sidebar
     const [isSidebarOpen, setSidebarOpen] = useState(false);
 
     const handleLogout = () => {
@@ -21,7 +20,6 @@ const StudentLayout = () => {
 
     const isActive = (path) => location.pathname === path;
 
-    // ... (Keep your navItems array exactly as it is) ...
     const navItems = [
         { name: 'Dashboard', href: '/student/dashboard', icon: LayoutDashboard },
         { name: 'My Profile', href: '/student/profile', icon: User },
@@ -29,13 +27,12 @@ const StudentLayout = () => {
         { name: 'Notices', href: '/student/notices', icon: Bell },
         { name: 'Class Timetable', href: '/student/timetable', icon: Clock },
         { name: 'Exam Schedule', href: '/student/exam-schedule', icon: Calendar },
-        { name: 'Study Materials', href: '/student/dashboard', icon: FileText },
     ];
 
     return (
         <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
 
-            {/* 1. Mobile Sidebar Overlay (Dark background when menu is open) */}
+            {/* 1. Mobile Sidebar Overlay */}
             {isSidebarOpen && (
                 <div
                     className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"

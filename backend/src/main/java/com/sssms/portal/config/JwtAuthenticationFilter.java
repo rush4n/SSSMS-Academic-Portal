@@ -30,7 +30,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 1. Skip OPTIONS requests
         if (request.getMethod().equals("OPTIONS")) {
             filterChain.doFilter(request, response);
             return;
@@ -38,17 +37,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String jwt = null;
 
-        // 2. Extract Token from Cookie
+        // 1. Check Cookie
         if (request.getCookies() != null) {
             for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
                 if ("jwt-token".equals(cookie.getName())) {
                     jwt = cookie.getValue();
-                    break; // Stop looking once found
+                    break;
                 }
             }
         }
 
-        // 3. Check if jwt is not null AND not empty
+        // 2. Check Header
+        if (jwt == null) {
+            final String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                jwt = authHeader.substring(7);
+            }
+        }
+
+        // 3. Authenticate
         if (jwt != null && !jwt.isEmpty()) {
             try {
                 String userEmail = jwtUtil.extractUsername(jwt);
@@ -58,18 +65,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     if (jwtUtil.isTokenValid(jwt, userDetails)) {
                         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
+                                userDetails, null, userDetails.getAuthorities()
                         );
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                        System.out.println("AUTH SUCCESS: User " + userEmail + " has roles: " + userDetails.getAuthorities());
+                    } else {
+                        System.out.println("AUTH FAIL: Token invalid for user " + userEmail);
                     }
                 }
             } catch (Exception e) {
-                // If token is expired or invalid, just ignore it and let the request proceed anonymously
-                System.out.println("Invalid JWT processing: " + e.getMessage());
+                System.out.println("JWT ERROR: " + e.getMessage());
             }
+        } else {
+             System.out.println("AUTH MISSING: No Cookie or Header found for " + request.getRequestURI());
         }
 
         filterChain.doFilter(request, response);

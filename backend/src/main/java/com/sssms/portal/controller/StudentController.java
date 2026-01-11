@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/student")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class StudentController {
 
     private final StudentService studentService;
@@ -25,7 +24,7 @@ public class StudentController {
     private final ResourceRepository resourceRepository;
     private final SubjectAllocationRepository allocationRepository;
     private final ExamResultRepository resultRepository;
-    private final ClassAssessmentRepository assessmentRepository;
+    private final StudentMarkRepository studentMarkRepository;
 
     @GetMapping("/my-attendance")
     public ResponseEntity<?> getMyAttendance(@AuthenticationPrincipal UserDetails userDetails) {
@@ -50,16 +49,17 @@ public class StudentController {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         Student student = studentRepository.findById(user.getUserId()).orElseThrow();
 
-        List<ClassAssessment> assessments = assessmentRepository.findByStudentId(student.getId());
+        List<StudentMark> marks = studentMarkRepository.findByStudentId(student.getId());
 
-        List<Map<String, Object>> response = assessments.stream().map(a -> {
+        List<Map<String, Object>> response = marks.stream().map(m -> {
             Map<String, Object> map = new java.util.HashMap<>();
-            map.put("id", a.getId());
-            map.put("subjectName", a.getAllocation().getSubject().getName());
-            map.put("subjectCode", a.getAllocation().getSubject().getCode());
-            map.put("examType", a.getExamType());
-            map.put("obtained", a.getMarksObtained());
-            map.put("max", a.getMaxMarks());
+            map.put("id", m.getId());
+            map.put("subjectName", m.getAssessment().getAllocation().getSubject().getName());
+            map.put("subjectCode", m.getAssessment().getAllocation().getSubject().getCode());
+
+            map.put("examType", m.getAssessment().getTitle());
+            map.put("obtained", m.getMarksObtained());
+            map.put("max", m.getAssessment().getMaxMarks());
             return map;
         }).collect(Collectors.toList());
 

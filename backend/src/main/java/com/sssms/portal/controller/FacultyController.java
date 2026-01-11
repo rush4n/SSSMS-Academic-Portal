@@ -1,23 +1,25 @@
 package com.sssms.portal.controller;
 
+import com.sssms.portal.dto.request.AssessmentRequest;
+import com.sssms.portal.dto.request.AttendanceRequest;
 import com.sssms.portal.entity.*;
 import com.sssms.portal.repository.*;
 import com.sssms.portal.service.FacultyService;
-import com.sssms.portal.dto.request.AssessmentSubmissionRequest;
-import com.sssms.portal.dto.request.StudentMarkDTO;
-import com.sssms.portal.dto.request.AttendanceRequest;
-import com.sssms.portal.dto.AttendanceReportDTO;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.time.LocalDate;
+
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/api/faculty")
@@ -26,24 +28,27 @@ public class FacultyController {
 
     private final SubjectAllocationRepository allocationRepository;
     private final UserRepository userRepository;
+    private final FacultyRepository facultyRepository;
     private final FacultyService facultyService;
-    private final ClassAssessmentRepository assessmentRepository;
-    private final StudentRepository studentRepository;
 
     @GetMapping("/my-subjects")
     public ResponseEntity<?> getMySubjects(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) return ResponseEntity.status(401).build();
 
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-        List<SubjectAllocation> allocations = allocationRepository.findByFacultyId(user.getUserId());
+
+        Faculty faculty = facultyRepository.findByUser_UserId(user.getUserId())
+                .orElseThrow(() -> new RuntimeException("Faculty profile not found"));
+
+        List<SubjectAllocation> allocations = allocationRepository.findByFacultyId(faculty.getId());
 
         List<Map<String, Object>> response = allocations.stream().map(a -> {
             Map<String, Object> map = new java.util.HashMap<>();
             map.put("id", a.getId());
             map.put("subjectName", a.getSubject().getName());
             map.put("subjectCode", a.getSubject().getCode());
-            map.put("className", a.getClassBatch().getBatchName());
-            map.put("division", a.getClassBatch().getDivision());
+            map.put("className", a.getSubject().getAcademicYear() != null ? a.getSubject().getAcademicYear().toString() : "N/A");
+            map.put("division", "");
             return map;
         }).collect(Collectors.toList());
 
@@ -60,32 +65,25 @@ public class FacultyController {
         return ResponseEntity.ok(facultyService.markAttendance(request));
     }
 
+    @GetMapping("/report/{allocationId}")
+    public ResponseEntity<?> getAttendanceReport(
+            @PathVariable Long allocationId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate
+    ) {
+        LocalDate start = (startDate != null && !startDate.isEmpty()) ? LocalDate.parse(startDate) : null;
+        LocalDate end = (endDate != null && !endDate.isEmpty()) ? LocalDate.parse(endDate) : null;
 
-    @PostMapping("/assessment/save")
-    public ResponseEntity<?> saveAssessment(@RequestBody AssessmentSubmissionRequest request) {
-        SubjectAllocation allocation = allocationRepository.findById(request.getAllocationId())
-                .orElseThrow(() -> new RuntimeException("Allocation not found"));
-
-        for (StudentMarkDTO mark : request.getMarks()) {
-            Student student = studentRepository.findById(mark.getStudentId())
-                    .orElseThrow(() -> new RuntimeException("Student not found"));
-
-            ClassAssessment assessment = ClassAssessment.builder()
-                    .allocation(allocation)
-                    .student(student)
-                    .examType(request.getExamType())
-                    .marksObtained(mark.getObtained())
-                    .maxMarks(request.getMaxMarks())
-                    .build();
-
-            assessmentRepository.save(assessment);
-        }
-
-        return ResponseEntity.ok("Marks saved successfully");
+        return ResponseEntity.ok(facultyService.getAttendanceReport(allocationId, start, end));
     }
 
-    @GetMapping("/report/{allocationId}")
-        public ResponseEntity<?> getAttendanceReport(
+    @PostMapping("/assessment")
+    public ResponseEntity<String> createAssessment(@RequestBody AssessmentRequest request) {
+        return ResponseEntity.ok(facultyService.createAssessment(request));
+    }
+
+    @GetMapping("/report/download/{allocationId}")
+        public ResponseEntity<Resource> downloadAttendanceReport(
                 @PathVariable Long allocationId,
                 @RequestParam(required = false) String startDate,
                 @RequestParam(required = false) String endDate
@@ -93,6 +91,13 @@ public class FacultyController {
             LocalDate start = (startDate != null && !startDate.isEmpty()) ? LocalDate.parse(startDate) : null;
             LocalDate end = (endDate != null && !endDate.isEmpty()) ? LocalDate.parse(endDate) : null;
 
-            return ResponseEntity.ok(facultyService.getAttendanceReport(allocationId, start, end));
+            InputStreamResource file = new InputStreamResource(facultyService.generateAttendanceCSV(allocationId, start, end));
+            String filename = "Attendance_Report_" + allocationId + ".csv";
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                    .contentType(MediaType.parseMediaType("application/csv"))
+                    .body(file);
         }
+
 }

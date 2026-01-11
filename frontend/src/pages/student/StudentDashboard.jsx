@@ -31,7 +31,7 @@ const StudentDashboard = () => {
                     setLatestNotice(noticeRes.data[0]);
                 }
 
-                // 2. Fetch Attendance & Subjects (From Phase 6/8)
+                // 2. Fetch Attendance & Subjects
                 const attRes = await api.get('/student/my-attendance');
                 setAttendanceReport(attRes.data);
 
@@ -103,7 +103,7 @@ const StudentDashboard = () => {
                     Welcome, {user?.name || user?.email?.split('@')[0] || "Student"}
                 </h1>
                 <p className="text-sm md:text-base text-gray-600">
-                    Architecture | Semester {user?.currentYear || '1'} | Year {user?.currentYear || '1'}
+                    Architecture | Year {user?.currentYear || '1'}
                 </p>
             </div>
 

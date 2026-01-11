@@ -18,11 +18,11 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
-// Implements UserDetails for Spring Security
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long userId;
 
     @Column(unique = true, nullable = false)
@@ -35,6 +35,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
+    @Builder.Default
     private boolean isActive = true;
 
     @Override

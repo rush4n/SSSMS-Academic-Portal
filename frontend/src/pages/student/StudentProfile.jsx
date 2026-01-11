@@ -95,6 +95,15 @@ const StudentProfile = () => {
                         </div>
                     </div>
 
+                    {/* Date of Birth */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                        <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 flex items-center">
+                            <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                            {profile.dob ? new Date(profile.dob).toLocaleDateString() : "N/A"}
+                        </div>
+                    </div>
+
                     {/* Department */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>

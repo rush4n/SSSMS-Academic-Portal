@@ -2,6 +2,7 @@ package com.sssms.portal.dto.request;
 
 import lombok.Data;
 import java.time.LocalDate;
+import com.sssms.portal.entity.AcademicYear;
 
 @Data
 public class StudentEnrollmentRequest {
@@ -18,4 +19,5 @@ public class StudentEnrollmentRequest {
     private String department;
     private int currentYear;
     private LocalDate dob;
+    private AcademicYear academicYear;
 }

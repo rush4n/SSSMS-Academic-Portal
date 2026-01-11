@@ -18,13 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
 @RestController
 @RequestMapping("/api/resources")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class ResourceController {
 
     private final FileStorageService fileStorageService;
@@ -51,15 +47,45 @@ public class ResourceController {
                 .build();
 
         resourceRepository.save(resource);
-
         return ResponseEntity.ok("File uploaded successfully");
     }
 
     @GetMapping("/allocation/{allocationId}")
     public ResponseEntity<List<Map<String, Object>>> getResources(@PathVariable Long allocationId) {
         List<AcademicResource> resources = resourceRepository.findByAllocationId(allocationId);
+        return ResponseEntity.ok(transformResources(resources));
+    }
 
-        List<Map<String, Object>> response = resources.stream().map(r -> {
+    @GetMapping("/student/{subjectCode}")
+    public ResponseEntity<List<Map<String, Object>>> getResourcesBySubject(@PathVariable String subjectCode) {
+        List<AcademicResource> resources = resourceRepository.findBySubjectCode(subjectCode);
+        return ResponseEntity.ok(transformResources(resources));
+    }
+
+    @GetMapping("/download/{fileName}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) {
+        Resource resource = fileStorageService.loadFileAsResource(fileName);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+    @GetMapping("/view/{fileName}")
+    public ResponseEntity<Resource> viewFile(@PathVariable String fileName) {
+        Resource resource = fileStorageService.loadFileAsResource(fileName);
+
+        String contentType = "application/pdf";
+        if (fileName.endsWith(".jpg") || fileName.endsWith(".png")) contentType = "image/jpeg";
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+    private List<Map<String, Object>> transformResources(List<AcademicResource> resources) {
+        return resources.stream().map(r -> {
             Map<String, Object> map = new java.util.HashMap<>();
             map.put("id", r.getId());
             map.put("title", r.getTitle());
@@ -67,36 +93,5 @@ public class ResourceController {
             map.put("date", r.getUploadDate());
             return map;
         }).collect(Collectors.toList());
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/student/{subjectCode}")
-        public ResponseEntity<List<Map<String, Object>>> getResourcesBySubject(@PathVariable String subjectCode) {
-            // 1. Fetch resources using the new Repository method
-            List<AcademicResource> resources = resourceRepository.findBySubjectCode(subjectCode);
-
-            // 2. Transform the data for the frontend
-            List<Map<String, Object>> response = resources.stream().map(r -> {
-                Map<String, Object> map = new java.util.HashMap<>();
-                map.put("id", r.getId());
-                map.put("title", r.getTitle());
-                map.put("fileName", r.getFileName());
-                map.put("date", r.getUploadDate());
-                return map;
-            }).collect(Collectors.toList());
-
-            return ResponseEntity.ok(response);
-        }
-
-
-    @GetMapping("/download/{fileName}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) {
-        Resource resource = fileStorageService.loadFileAsResource(fileName);
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
     }
 }

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { FileText, Download, ArrowLeft } from 'lucide-react';
+import { FileText, Download, ArrowLeft, Eye, X } from 'lucide-react';
 
 const StudentResources = () => {
     const { subjectCode } = useParams();
     const navigate = useNavigate();
     const [resources, setResources] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const [previewFile, setPreviewFile] = useState(null);
 
     useEffect(() => {
         const fetchResources = async () => {
@@ -55,7 +57,7 @@ const StudentResources = () => {
             ) : (
                 <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 shadow-sm">
                     {resources.map((res, index) => (
-                        <div key={index} className="p-4 flex items-center justify-between hover:bg-gray-50">
+                        <div key={index} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                             <div className="flex items-center">
                                 <div className="p-2 bg-blue-50 text-blue-600 rounded-lg mr-4">
                                     <FileText className="w-5 h-5" />
@@ -65,14 +67,47 @@ const StudentResources = () => {
                                     <p className="text-xs text-gray-500">{new Date(res.date).toLocaleDateString()}</p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => handleDownload(res.fileName, res.title)}
-                                className="text-gray-400 hover:text-blue-600 p-2"
-                            >
-                                <Download className="w-5 h-5" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                {/* Preview Button */}
+                                <button
+                                    onClick={() => setPreviewFile(res.fileName)}
+                                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    title="Preview"
+                                >
+                                    <Eye className="w-5 h-5" />
+                                </button>
+                                {/* Download Button */}
+                                <button
+                                    onClick={() => handleDownload(res.fileName, res.title)}
+                                    className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                    title="Download"
+                                >
+                                    <Download className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* PDF Preview Modal */}
+            {previewFile && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-sm p-4">
+                    <div className="bg-white w-full h-full max-w-5xl max-h-[90vh] rounded-xl overflow-hidden flex flex-col shadow-2xl">
+                        <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
+                            <h3 className="font-bold text-gray-700">Document Preview</h3>
+                            <button onClick={() => setPreviewFile(null)} className="text-gray-500 hover:text-red-500 transition-colors">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <div className="flex-1 bg-gray-100 p-1">
+                            <iframe
+                                src={`http://localhost:8080/api/resources/view/${previewFile}`}
+                                className="w-full h-full border-none rounded-lg bg-white"
+                                title="PDF Preview"
+                            />
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
