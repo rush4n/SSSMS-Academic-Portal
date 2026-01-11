@@ -1,33 +1,35 @@
 import axios from "axios";
 
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+
 const api = axios.create({
-  baseURL: "http://localhost:8080/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true, // IMPORTANT: Allows sending Cookies
+    baseURL: BASE_URL,
+    headers: {
+        "Content-Type": "application/json",
+    },
+    withCredentials: true,
 });
 
 api.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
+        const token = localStorage.getItem("token");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
     },
     (error) => {
-      return Promise.reject(error);
+        return Promise.reject(error);
     }
 );
 
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-      if (error.response && error.response.status === 403) {
-        console.error("Access Forbidden: Check user Role or Cookie/Header.");
-      }
-      return Promise.reject(error);
+        if (error.response && error.response.status === 403) {
+            console.error("Access Forbidden: Check user Role or Cookie/Header.");
+        }
+        return Promise.reject(error);
     }
 );
 
