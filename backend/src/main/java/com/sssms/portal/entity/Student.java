@@ -39,6 +39,18 @@ public class Student {
     private String phoneNumber;
     private String address;
 
+    private String coaEnrollmentNo;
+    private String grNo;
+    private String aadharNo;
+    private String abcId;
+    private String bloodGroup;
+    private String parentPhoneNumber;
+
+    @Enumerated(EnumType.STRING)
+    private AdmissionCategory admissionCategory;
+
+    private boolean scholarshipApplied;
+
     @ManyToMany(fetch = FetchType.EAGER)
         @JoinTable(
             name = "student_extra_courses",

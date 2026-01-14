@@ -51,6 +51,14 @@ public class AdminService {
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())
                 .dob(request.getDob())
+                .coaEnrollmentNo(request.getCoaEnrollmentNo())
+                .grNo(request.getGrNo())
+                .aadharNo(request.getAadharNo())
+                .abcId(request.getAbcId())
+                .bloodGroup(request.getBloodGroup())
+                .parentPhoneNumber(request.getParentPhoneNumber())
+                .admissionCategory(request.getAdmissionCategory())
+                .scholarshipApplied(false)
                 .build();
         studentRepository.save(newStudent);
 
@@ -77,6 +85,11 @@ public class AdminService {
                 .qualification(request.getQualification())
                 .phoneNumber(request.getPhoneNumber())
                 .joiningDate(request.getJoiningDate())
+                .coaRegistrationNo(request.getCoaRegistrationNo())
+                .coaValidFrom(request.getCoaValidFrom())
+                .coaValidTill(request.getCoaValidTill())
+                .aadharNo(request.getAadharNo())
+                .panCardNo(request.getPanCardNo())
                 .build();
         facultyRepository.save(newFaculty);
         return "Faculty enrolled successfully";

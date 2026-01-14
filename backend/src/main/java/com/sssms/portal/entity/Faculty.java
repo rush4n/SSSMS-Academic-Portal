@@ -33,4 +33,9 @@ public class Faculty {
     private String phoneNumber;
     private LocalDate joiningDate;
     private String timetablePdf;
+    private String coaRegistrationNo;
+    private java.time.LocalDate coaValidFrom;
+    private java.time.LocalDate coaValidTill;
+    private String aadharNo;
+    private String panCardNo;
 }

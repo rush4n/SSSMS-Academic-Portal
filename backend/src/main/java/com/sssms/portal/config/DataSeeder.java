@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 
 @Component
@@ -42,7 +43,6 @@ public class DataSeeder implements CommandLineRunner {
         // 3. Seed Users
         if (userRepository.count() == 0) {
 
-            //Admin
             User admin = User.builder()
                     .email("admin@sssms.edu")
                     .passwordHash(passwordEncoder.encode("admin123"))
@@ -52,11 +52,10 @@ public class DataSeeder implements CommandLineRunner {
             userRepository.save(admin);
             System.out.println("DataSeeder: Admin Created");
 
-            //Faculty
             User facultyUser1 = User.builder()
                     .email("faculty@sssms.edu")
                     .passwordHash(passwordEncoder.encode("faculty123"))
-                    .role(Role.FACULTY) // Fixed
+                    .role(Role.FACULTY)
                     .isActive(true)
                     .build();
             userRepository.save(facultyUser1);
@@ -67,10 +66,17 @@ public class DataSeeder implements CommandLineRunner {
                     .lastName("Johnson")
                     .department("Architecture")
                     .designation("Senior Professor")
+                    .qualification("M.Arch")
+                    .phoneNumber("9876543210")
+                    .joiningDate(LocalDate.of(2015, 6, 1))
+                    .coaRegistrationNo("COA/2015/12345")
+                    .coaValidFrom(LocalDate.of(2015, 1, 1))
+                    .coaValidTill(LocalDate.of(2030, 12, 31))
+                    .aadharNo("1234-5678-9012")
+                    .panCardNo("ABCDE1234F")
                     .build();
             facultyRepository.save(facultyProfile1);
 
-            // Student
             User studentUser1 = User.builder()
                     .email("student@sssms.edu")
                     .passwordHash(passwordEncoder.encode("student123"))
@@ -82,13 +88,25 @@ public class DataSeeder implements CommandLineRunner {
             Student studentProfile1 = Student.builder()
                     .user(studentUser1)
                     .firstName("Bob")
+                    .middleName("James")
                     .lastName("Williams")
                     .prn("ARC2024001")
                     .academicYear(AcademicYear.FIRST_YEAR)
+                    .dob(LocalDate.of(2004, 5, 15))
+                    .phoneNumber("9988776655")
+                    .address("123 College Road, Solapur")
+                    .coaEnrollmentNo("COA-S-2024-001")
+                    .grNo("GR-2024-101")
+                    .aadharNo("9876-5432-1098")
+                    .abcId("ABC-123-456")
+                    .bloodGroup("O+")
+                    .parentPhoneNumber("8877665544")
+                    .admissionCategory(AdmissionCategory.CAP_ROUND_1)
+                    .scholarshipApplied(false)
                     .build();
             studentRepository.save(studentProfile1);
 
-            System.out.println("DataSeeder: Users & Profiles Created");
+            System.out.println("DataSeeder: Users & Profiles Created with Full Details");
         }
     }
 }

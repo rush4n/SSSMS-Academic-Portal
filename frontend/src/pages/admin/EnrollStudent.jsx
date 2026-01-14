@@ -15,6 +15,14 @@ const EnrollStudent = () => {
     phoneNumber: "",
     address: "",
     dob: "",
+    // New Fields
+    coaEnrollmentNo: "",
+    grNo: "",
+    aadharNo: "",
+    abcId: "",
+    bloodGroup: "",
+    parentPhoneNumber: "",
+    admissionCategory: "CAP_ROUND_1",
   });
   const [status, setStatus] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
@@ -31,6 +39,7 @@ const EnrollStudent = () => {
     try {
       await api.post("/admin/enroll-student", formData);
       setStatus({ type: "success", message: "Student enrolled successfully!" });
+      // Reset core fields (keeping dropdowns same for convenience)
       setFormData({
         ...formData,
         firstName: "",
@@ -38,6 +47,10 @@ const EnrollStudent = () => {
         lastName: "",
         email: "",
         prn: "",
+        aadharNo: "",
+        abcId: "",
+        grNo: "",
+        coaEnrollmentNo: ""
       });
     } catch (error) {
       setStatus({
@@ -82,16 +95,17 @@ const EnrollStudent = () => {
 
         <form
             onSubmit={handleSubmit}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+            className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden p-8 space-y-8"
         >
-          <div className="p-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          {/* SECTION 1: Personal Information */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center border-b pb-2">
             <span className="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">
               1
             </span>
               Personal Information
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   First Name
@@ -113,7 +127,6 @@ const EnrollStudent = () => {
                     value={formData.middleName}
                     onChange={handleChange}
                     className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-
                 />
               </div>
               <div>
@@ -128,19 +141,8 @@ const EnrollStudent = () => {
                     required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <input
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    required
-                />
-              </div>
+
+              {/* Row 2 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Date of Birth
@@ -156,11 +158,70 @@ const EnrollStudent = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
+                  Blood Group
+                </label>
+                <input
+                    name="bloodGroup"
+                    placeholder="e.g. O+"
+                    value={formData.bloodGroup}
+                    onChange={handleChange}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Aadhar Number
+                </label>
+                <input
+                    name="aadharNo"
+                    value={formData.aadharNo}
+                    onChange={handleChange}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 2: Contact Details */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center border-b pb-2">
+            <span className="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">
+              2
+            </span>
+              Contact Details
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address
+                </label>
+                <input
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Student Mobile Number
                 </label>
                 <input
                     name="phoneNumber"
                     value={formData.phoneNumber}
+                    onChange={handleChange}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Parent Mobile Number
+                </label>
+                <input
+                    name="parentPhoneNumber"
+                    value={formData.parentPhoneNumber}
                     onChange={handleChange}
                     className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                 />
@@ -177,10 +238,13 @@ const EnrollStudent = () => {
                 />
               </div>
             </div>
+          </div>
 
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          {/* SECTION 3: Academic Details */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center border-b pb-2">
             <span className="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">
-              2
+              3
             </span>
               Academic Details
             </h2>
@@ -199,17 +263,57 @@ const EnrollStudent = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Department
+                  COA Enrollment Number
+                </label>
+                <input
+                    name="coaEnrollmentNo"
+                    value={formData.coaEnrollmentNo}
+                    onChange={handleChange}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg font-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  GR Number
+                </label>
+                <input
+                    name="grNo"
+                    value={formData.grNo}
+                    onChange={handleChange}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  ABC / APAAR ID
+                </label>
+                <input
+                    name="abcId"
+                    value={formData.abcId}
+                    onChange={handleChange}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Admission Category
                 </label>
                 <select
-                    name="department"
-                    value={formData.department}
+                    name="admissionCategory"
+                    value={formData.admissionCategory}
                     onChange={handleChange}
                     className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                 >
-                  <option value="Architecture">Architecture</option>
+                  <option value="CAP_ROUND_1">CAP Round I</option>
+                  <option value="CAP_ROUND_2">CAP Round II</option>
+                  <option value="CAP_ROUND_3">CAP Round III</option>
+                  <option value="VACANCY_AGAINST_CAP">Vacancy Against CAP</option>
+                  <option value="INSTITUTE_LEVEL">Institute Level</option>
                 </select>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Current Year
@@ -225,6 +329,14 @@ const EnrollStudent = () => {
                   <option value="THIRD_YEAR">Third Year</option>
                   <option value="FOURTH_YEAR">Fourth Year</option>
                   <option value="FIFTH_YEAR">Fifth Year</option>
+                </select>
+
+              </div>
+
+              {/* Hidden Department (Hardcoded) */}
+              <div className="hidden">
+                <select name="department" value={formData.department} onChange={handleChange}>
+                  <option value="Architecture">Architecture</option>
                 </select>
               </div>
             </div>

@@ -20,4 +20,11 @@ public class StudentEnrollmentRequest {
     private int currentYear;
     private LocalDate dob;
     private AcademicYear academicYear;
+    private String coaEnrollmentNo;
+    private String grNo;
+    private String aadharNo;
+    private String abcId;
+    private String bloodGroup;
+    private String parentPhoneNumber;
+    private com.sssms.portal.entity.AdmissionCategory admissionCategory;
 }
