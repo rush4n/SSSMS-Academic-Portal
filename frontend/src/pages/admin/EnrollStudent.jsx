@@ -15,7 +15,6 @@ const EnrollStudent = () => {
     phoneNumber: "",
     address: "",
     dob: "",
-    // New Fields
     coaEnrollmentNo: "",
     grNo: "",
     aadharNo: "",
@@ -39,7 +38,6 @@ const EnrollStudent = () => {
     try {
       await api.post("/admin/enroll-student", formData);
       setStatus({ type: "success", message: "Student enrolled successfully!" });
-      // Reset core fields (keeping dropdowns same for convenience)
       setFormData({
         ...formData,
         firstName: "",
@@ -333,7 +331,7 @@ const EnrollStudent = () => {
 
               </div>
 
-              {/* Hidden Department (Hardcoded) */}
+              {/* Hidden Department */}
               <div className="hidden">
                 <select name="department" value={formData.department} onChange={handleChange}>
                   <option value="Architecture">Architecture</option>
