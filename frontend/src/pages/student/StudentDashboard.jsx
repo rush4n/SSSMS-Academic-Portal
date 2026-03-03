@@ -1,3 +1,5 @@
+//check
+
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
@@ -6,10 +8,8 @@ import {
     Calendar,
     Target,
     Book,
-    FileText,
     Clock,
     Bell,
-    CheckCircle,
     TrendingUp,
     TrendingDown
 } from 'lucide-react';
@@ -25,18 +25,14 @@ const StudentDashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // 1. Fetch Notices
                 const noticeRes = await api.get('/notices');
                 if (noticeRes.data && noticeRes.data.length > 0) {
                     setLatestNotice(noticeRes.data[0]);
                 }
-
-                // 2. Fetch Attendance & Subjects
                 const attRes = await api.get('/student/my-attendance');
                 setAttendanceReport(attRes.data);
-
             } catch (error) {
-                console.error("Failed to load dashboard data", error);
+                console.error("Failed to load dashboard data");
             } finally {
                 setLoading(false);
             }
@@ -44,41 +40,15 @@ const StudentDashboard = () => {
         fetchData();
     }, []);
 
-    // Calculate Overall Attendance
     const overallPercentage = attendanceReport.length > 0
         ? Math.round(attendanceReport.reduce((acc, curr) => acc + curr.percentage, 0) / attendanceReport.length)
         : 0;
 
-    // Quick Access Configuration
     const quickAccessCards = [
-        {
-            title: 'Exam Schedule',
-            subtitle: 'View upcoming examinations',
-            icon: Calendar,
-            color: 'blue',
-            href: '/student/exam-schedule'
-        },
-        {
-            title: 'Results',
-            subtitle: 'Check your examination results',
-            icon: Target,
-            color: 'green',
-            href: '/student/results'
-        },
-        {
-            title: 'Class Timetable',
-            subtitle: 'View your weekly schedule',
-            icon: Clock,
-            color: 'indigo',
-            href: '/student/timetable'
-        },
-        {
-            title: 'Notice Board',
-            subtitle: 'Check the latest announcements',
-            icon: Bell,
-            color: 'orange',
-            href: '/student/notices'
-        },
+        { title: 'Exam Schedule', subtitle: 'View upcoming examinations', icon: Calendar, color: 'blue', href: '/student/exam-schedule' },
+        { title: 'Results', subtitle: 'Check your examination results', icon: Target, color: 'green', href: '/student/results' },
+        { title: 'Class Timetable', subtitle: 'View your weekly schedule', icon: Clock, color: 'indigo', href: '/student/timetable' },
+        { title: 'Notice Board', subtitle: 'Check the latest announcements', icon: Bell, color: 'orange', href: '/student/notices' },
     ];
 
     const getColorClasses = (color) => {
@@ -92,6 +62,11 @@ const StudentDashboard = () => {
         return colors[color] || colors.blue;
     };
 
+    const formatYear = (str) => {
+        if (!str) return '1';
+        return str.replace('_', ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+    };
+
     if (loading) return <div className="p-8 text-gray-500">Loading Dashboard...</div>;
 
     return (
@@ -103,7 +78,7 @@ const StudentDashboard = () => {
                     Welcome, {user?.name || user?.email?.split('@')[0] || "Student"}
                 </h1>
                 <p className="text-sm md:text-base text-gray-600">
-                    Architecture | Year {user?.currentYear || '1'}
+                    Architecture | Year {formatYear(user?.currentYear)}
                 </p>
             </div>
 
@@ -136,7 +111,7 @@ const StudentDashboard = () => {
                 </div>
             </div>
 
-            {/* Attendance & Subjects Section */}
+            {/* Attendance Section */}
             <div className="mb-10">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-gray-900">My Academic Status</h2>
@@ -167,19 +142,14 @@ const StudentDashboard = () => {
                                 <h4 className="font-bold text-gray-900 mb-2">{item.subjectName}</h4>
 
                                 <div className="text-sm text-gray-500 space-y-1 mb-4">
-                                    <div className="flex justify-between"><span>Lectures Held:</span> <span>{item.totalSessions}</span></div>
-                                    <div className="flex justify-between"><span>You Attended:</span> <span>{item.attendedSessions}</span></div>
+                                    <div className="flex justify-between"><span>Lectures:</span> <span>{item.totalSessions}</span></div>
+                                    <div className="flex justify-between"><span>Attended:</span> <span>{item.attendedSessions}</span></div>
                                 </div>
 
-                                {/* Progress Bar */}
                                 <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
-                                    <div
-                                        className={`h-2 rounded-full ${item.percentage >= 75 ? 'bg-green-500' : 'bg-red-500'}`}
-                                        style={{ width: `${item.percentage}%` }}
-                                    ></div>
+                                    <div className={`h-2 rounded-full ${item.percentage >= 75 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${item.percentage}%` }}></div>
                                 </div>
 
-                                {/* View Materials Button */}
                                 <div className="border-t border-gray-100 pt-4">
                                     <button
                                         onClick={() => navigate(`/student/resources/${item.subjectCode}`)}

@@ -1,3 +1,5 @@
+//check
+
 package com.sssms.portal.controller;
 
 import com.sssms.portal.entity.*;
@@ -25,6 +27,7 @@ public class StudentController {
     private final SubjectAllocationRepository allocationRepository;
     private final ExamResultRepository resultRepository;
     private final StudentMarkRepository studentMarkRepository;
+    private final com.sssms.portal.service.GradingService gradingService;
 
     @GetMapping("/my-attendance")
     public ResponseEntity<?> getMyAttendance(@AuthenticationPrincipal UserDetails userDetails) {
@@ -98,4 +101,11 @@ public class StudentController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/report-card")
+        public ResponseEntity<?> getReportCard(@AuthenticationPrincipal UserDetails userDetails) {
+            if (userDetails == null) return ResponseEntity.status(401).build();
+            User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+            return ResponseEntity.ok(gradingService.generateReportCard(user.getUserId()));
+        }
 }

@@ -1,3 +1,5 @@
+//check
+
 package com.sssms.portal.controller;
 
 import com.sssms.portal.dto.request.AssessmentRequest;
@@ -32,6 +34,7 @@ public class FacultyController {
     private final FacultyService facultyService;
     private final StudentRepository studentRepository;
     private final com.sssms.portal.service.StudentService studentService;
+    private final com.sssms.portal.service.GradingService gradingService;
 
     @GetMapping("/my-subjects")
     public ResponseEntity<?> getMySubjects(@AuthenticationPrincipal UserDetails userDetails) {
@@ -151,5 +154,11 @@ public class FacultyController {
 
             return ResponseEntity.ok(response);
         }
+
+    @PostMapping("/marks/batch")
+            public ResponseEntity<?> saveBatchMarks(@RequestBody List<com.sssms.portal.dto.request.AcademicMarksRequest> requests) {
+                gradingService.saveBatchMarks(requests);
+                return ResponseEntity.ok("Marks Saved Successfully");
+    }
 
 }

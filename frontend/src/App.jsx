@@ -1,3 +1,5 @@
+//check
+
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -49,6 +51,7 @@ import StudentResults from './pages/student/StudentResults';
 import StudentTimetable from './pages/student/StudentTimetable';
 import StudentExamSchedule from './pages/student/StudentExamSchedule';
 import StudentProfile from './pages/student/StudentProfile';
+import StudentReportCard from './pages/student/StudentReportCard';
 
 function App() {
   return (
@@ -96,7 +99,7 @@ function App() {
                 <Route path="notices" element={<NoticesPage />} />
 
                 <Route path="results" element={<FacultyResultsSubjects />} />
-                <Route path="grading/:allocationId" element={<GradingSheet />} />
+                <Route path="grading/:id" element={<GradingSheet />} />
 
                 <Route path="timetable" element={<FacultyTimetable />} />
                 <Route path="exam-schedule" element={<UploadExamSchedule />} />
@@ -120,6 +123,7 @@ function App() {
               <Route path="timetable" element={<StudentTimetable />} />
               <Route path="exam-schedule" element={<StudentExamSchedule />} />
               <Route path="profile" element={<StudentProfile />} />
+              <Route path="results" element={<StudentReportCard />} />
             </Route>
           </Routes>
         </Router>
