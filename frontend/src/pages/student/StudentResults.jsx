@@ -205,38 +205,44 @@ const StudentResults = () => {
         <div className="max-w-4xl mx-auto pb-10">
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Academic Performance</h1>
 
-            {/* SECTION 1: FINAL SGPA RESULTS */}
+            {/* SECTION 1: SEMESTER-WISE SGPA/CGPA RESULTS */}
             <div className="mb-10">
                 <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                     <Star className="w-5 h-5 mr-2 text-yellow-500" />
-                    Term End Results (SGPA)
+                    Semester-wise SGPA & CGPA
                 </h2>
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm whitespace-nowrap">
                         <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
-                            <th className="p-4 font-semibold text-gray-600">Exam Session</th>
-                            <th className="p-4 font-semibold text-gray-600">Date Declared</th>
+                            <th className="p-4 font-semibold text-gray-600">Semester</th>
                             <th className="p-4 font-semibold text-gray-600">SGPA</th>
+                            <th className="p-4 font-semibold text-gray-600">CGPA (Cumulative)</th>
                             <th className="p-4 font-semibold text-gray-600">Status</th>
+                            <th className="p-4 font-semibold text-gray-600">Date Declared</th>
                         </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                         {sgpaResults.length === 0 ? (
-                            <tr><td colSpan="4" className="p-6 text-center text-gray-500">No term results declared yet.</td></tr>
+                            <tr><td colSpan="5" className="p-6 text-center text-gray-500">No semester results declared yet.</td></tr>
                         ) : (
                             sgpaResults.map((res) => (
                                 <tr key={res.id} className="hover:bg-gray-50">
-                                    <td className="p-4 text-gray-900">{res.examSession}</td>
-                                    <td className="p-4 text-gray-500">{new Date(res.resultDate).toLocaleDateString()}</td>
-                                    <td className="p-4 font-bold text-blue-600">{res.sgpa}</td>
+                                    <td className="p-4 text-gray-900 font-semibold">Semester {res.semester}</td>
+                                    <td className="p-4 font-bold text-blue-600 text-lg">{res.sgpa ? res.sgpa.toFixed(2) : '-'}</td>
+                                    <td className="p-4 font-bold text-purple-600 text-lg">{res.cgpa ? res.cgpa.toFixed(2) : '-'}</td>
                                     <td className="p-4">
                                         <span className={`px-2 py-1 rounded text-xs font-bold ${
-                                            res.status === 'PASS' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                            res.status === 'PASS' ? 'bg-green-100 text-green-700' : 
+                                            res.status === 'FAIL' ? 'bg-red-100 text-red-700' :
+                                            'bg-yellow-100 text-yellow-700'
                                         }`}>
                                             {res.status}
                                         </span>
+                                    </td>
+                                    <td className="p-4 text-gray-500">
+                                        {res.resultDate ? new Date(res.resultDate).toLocaleDateString() : '-'}
                                     </td>
                                 </tr>
                             ))

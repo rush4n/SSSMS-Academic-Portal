@@ -46,7 +46,7 @@ public class StudentController {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         Student student = studentRepository.findById(user.getUserId()).orElseThrow();
 
-        List<ExamResult> results = resultRepository.findByStudentId(student.getId());
+        List<ExamResult> results = resultRepository.findByStudentIdOrderBySemesterAsc(student.getId());
         return ResponseEntity.ok(results);
     }
 

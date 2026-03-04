@@ -44,6 +44,7 @@ public class AdminController {
     private final ProfessionalDevelopmentRepository pdRepository;
     private final com.sssms.portal.service.StudentService studentService;
     private final com.sssms.portal.service.GradingService gradingService;
+    private final com.sssms.portal.service.GPAService gpaService;
 
     @PostMapping("/subjects")
     public ResponseEntity<?> createSubject(@RequestBody Subject subject) {
@@ -243,4 +244,82 @@ public class AdminController {
         map.put("facultyName", pd.getFaculty().getFirstName() + " " + pd.getFaculty().getLastName());
         return map;
     }
+
+    // ==================== GPA LEDGER ====================
+
+    @GetMapping("/gpa/students")
+    public ResponseEntity<?> getStudentsForGPA(
+            @RequestParam(required = false) String year,
+            @RequestParam(required = false) Integer semester) {
+        List<Student> students = studentRepository.findAll();
+
+        // Filter by year if provided
+        if (year != null && !year.isEmpty()) {
+            try {
+                AcademicYear yearEnum = AcademicYear.valueOf(year);
+                students = students.stream()
+                        .filter(s -> s.getAcademicYear() == yearEnum)
+                        .collect(Collectors.toList());
+            } catch (IllegalArgumentException e) { }
+        }
+
+        students.sort(Comparator.comparing(Student::getFirstName));
+
+        // Get SGPA for each student for the selected semester
+        List<Map<String, Object>> response = students.stream().map(student -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", student.getId());
+            map.put("prn", student.getPrn());
+            map.put("firstName", student.getFirstName());
+            map.put("lastName", student.getLastName());
+            map.put("academicYear", student.getAcademicYear() != null ? student.getAcademicYear().toString() : "N/A");
+
+            // Get existing result for this semester
+            if (semester != null) {
+                gpaService.getStudentResults(student.getId()).stream()
+                        .filter(r -> r.getSemester().equals(semester))
+                        .findFirst()
+                        .ifPresent(result -> {
+                            map.put("sgpa", result.getSgpa());
+                            map.put("cgpa", result.getCgpa());
+                            map.put("status", result.getStatus());
+                        });
+            }
+
+            // Get overall CGPA
+            Double overallCgpa = gpaService.calculateOverallCGPA(student.getId());
+            map.put("overallCgpa", overallCgpa);
+
+            return map;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/gpa/enter")
+    public ResponseEntity<?> enterSGPA(@RequestBody Map<String, Object> payload) {
+        Long studentId = Long.valueOf(payload.get("studentId").toString());
+        Integer semester = Integer.valueOf(payload.get("semester").toString());
+        Double sgpa = Double.valueOf(payload.get("sgpa").toString());
+        String status = payload.get("status").toString();
+
+        gpaService.enterSGPA(studentId, semester, sgpa, status);
+
+        return ResponseEntity.ok("SGPA entered successfully");
+    }
+
+    @PostMapping("/gpa/batch")
+    public ResponseEntity<?> enterBatchSGPA(@RequestBody List<Map<String, Object>> batch) {
+        for (Map<String, Object> entry : batch) {
+            Long studentId = Long.valueOf(entry.get("studentId").toString());
+            Integer semester = Integer.valueOf(entry.get("semester").toString());
+            Double sgpa = Double.valueOf(entry.get("sgpa").toString());
+            String status = entry.get("status").toString();
+
+            gpaService.enterSGPA(studentId, semester, sgpa, status);
+        }
+
+        return ResponseEntity.ok("Batch SGPA entered successfully");
+    }
 }
+

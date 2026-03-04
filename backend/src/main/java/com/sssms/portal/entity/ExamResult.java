@@ -19,8 +19,10 @@ public class ExamResult {
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
-    private double sgpa;
-    private String status;
+    private Integer semester; // 1 to 10
+    private Double sgpa; // Semester GPA
+    private Double cgpa; // Cumulative GPA up to this semester
+    private String status; // PASS/FAIL
     private LocalDate resultDate;
-    private String examSession;
+    private String examSession; // e.g., "Semester 1 - 2024"
 }

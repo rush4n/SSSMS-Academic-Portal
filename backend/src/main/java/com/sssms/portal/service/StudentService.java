@@ -32,12 +32,13 @@ public class StudentService {
         double avgAttendance = attendanceList.isEmpty() ? 0.0 :
             attendanceList.stream().mapToDouble(StudentAttendanceDTO::getPercentage).average().orElse(0.0);
 
-        // 2. Fetch Real CGPA
-        List<ExamResult> results = examResultRepository.findByStudentId(userId);
+        // 2. Fetch Real CGPA (use latest semester's cumulative CGPA)
+        List<ExamResult> results = examResultRepository.findByStudentIdOrderBySemesterAsc(userId);
         double cgpa = 0.0;
         if (!results.isEmpty()) {
-            double totalSgpa = results.stream().mapToDouble(ExamResult::getSgpa).sum();
-            cgpa = totalSgpa / results.size();
+            // Get the CGPA from the latest semester (which is cumulative)
+            ExamResult latestResult = results.get(results.size() - 1);
+            cgpa = latestResult.getCgpa() != null ? latestResult.getCgpa() : 0.0;
         }
 
         return StudentProfileResponse.builder()
