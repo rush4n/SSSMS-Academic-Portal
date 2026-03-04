@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { Save, ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
 
 const GradingSheet = () => {
     const { id } = useParams(); // Allocation ID
@@ -23,7 +23,7 @@ const GradingSheet = () => {
             try {
                 const response = await api.get(`/faculty/allocation/${id}/students`);
                 setStudents(response.data);
-            } catch (error) {
+            } catch {
                 setStatus({ type: 'error', msg: 'Failed to load students' });
             }
         };
@@ -56,7 +56,7 @@ const GradingSheet = () => {
             await api.post('/faculty/marks/batch', requests);
             setStatus({ type: 'success', msg: 'Marks Saved Successfully!' });
             setTimeout(() => navigate('/faculty/dashboard'), 2000);
-        } catch (error) {
+        } catch {
             setStatus({ type: 'error', msg: 'Failed to save marks.' });
         } finally {
             setSaving(false);
@@ -79,11 +79,18 @@ const GradingSheet = () => {
                             value={examType} onChange={e => setExamType(e.target.value)}
                             className="w-full p-2 border rounded-lg"
                         >
-                            <option value="UNIT_TEST_1">Unit Test 1</option>
-                            <option value="UNIT_TEST_2">Unit Test 2</option>
-                            <option value="UNIT_TEST_3">Unit Test 3</option>
-                            <option value="ASSIGNMENT">Assignment</option>
-                            <option value="JURY">Jury</option>
+                            <optgroup label="Internal Assessment (ISE/ICA)">
+                                <option value="UNIT_TEST_1">Unit Test 1</option>
+                                <option value="UNIT_TEST_2">Unit Test 2</option>
+                                <option value="UNIT_TEST_3">Unit Test 3</option>
+                                <option value="ASSIGNMENT">Assignment</option>
+                                <option value="JURY">Jury</option>
+                            </optgroup>
+                            <optgroup label="External Assessment (ESE)">
+                                <option value="THEORY_ESE">Theory ESE</option>
+                                <option value="PRACTICAL_ESE">Practical ESE</option>
+                                <option value="SESSIONAL_ESE">Sessional/Studio ESE</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div>

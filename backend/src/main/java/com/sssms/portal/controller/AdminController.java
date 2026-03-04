@@ -43,6 +43,7 @@ public class AdminController {
     private final FacultyRepository facultyRepository;
     private final ProfessionalDevelopmentRepository pdRepository;
     private final com.sssms.portal.service.StudentService studentService;
+    private final com.sssms.portal.service.GradingService gradingService;
 
     @PostMapping("/subjects")
     public ResponseEntity<?> createSubject(@RequestBody Subject subject) {
@@ -187,6 +188,11 @@ public class AdminController {
         public ResponseEntity<?> getFacultyProfile(@PathVariable Long id) {
             return ResponseEntity.ok(adminService.getFacultyProfile(id));
      }
+
+    @GetMapping("/report-card/{studentId}")
+    public ResponseEntity<?> getStudentReportCard(@PathVariable Long studentId) {
+        return ResponseEntity.ok(gradingService.generateReportCard(studentId));
+    }
 
     // ==================== PROFESSIONAL DEVELOPMENT ====================
 

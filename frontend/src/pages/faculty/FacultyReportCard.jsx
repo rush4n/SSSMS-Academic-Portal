@@ -1,41 +1,98 @@
-//check
-
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { BookOpen, Award, TrendingUp } from 'lucide-react';
+import { Search, Award, BookOpen, TrendingUp, ArrowLeft } from 'lucide-react';
 
-const StudentReportCard = () => {
-    const [report, setReport] = useState([]);
-    const [loading, setLoading] = useState(true);
+const FacultyReportCard = () => {
+    const navigate = useNavigate();
+    const [studentId, setStudentId] = useState('');
+    const [report, setReport] = useState(null);
+    const [studentInfo, setStudentInfo] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchReport = async () => {
-            try {
-                const res = await api.get('/student/report-card');
-                setReport(res.data);
-            } catch {
-                console.error("Failed to load report card");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchReport();
-    }, []);
+    const handleSearch = async () => {
+        if (!studentId) return;
 
-    if (loading) return <div className="p-8 text-gray-500">Loading...</div>;
+        setLoading(true);
+        setError(null);
+        setReport(null);
+
+        try {
+            // Fetch student profile to get basic info
+            const profileRes = await api.get(`/faculty/student/${studentId}/profile`);
+            setStudentInfo(profileRes.data);
+
+            // Fetch report card
+            const reportRes = await api.get(`/faculty/report-card/${studentId}`);
+            setReport(reportRes.data);
+        } catch (err) {
+            setError(err.response?.data || 'Failed to fetch report card. You may not have permission to view this student.');
+            setReport(null);
+            setStudentInfo(null);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="max-w-6xl mx-auto pb-10">
+            <button
+                onClick={() => navigate('/faculty/dashboard')}
+                className="mb-6 flex items-center text-gray-600 hover:text-blue-600"
+            >
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+            </button>
+
             <div className="flex items-center gap-3 mb-8">
                 <Award className="w-8 h-8 text-blue-600" />
-                <h1 className="text-3xl font-bold text-gray-900">Academic Report Card</h1>
+                <h1 className="text-3xl font-bold text-gray-900">Student Report Card</h1>
             </div>
 
-            {report.length === 0 ? (
-                <div className="bg-white p-8 rounded-xl border border-gray-200 text-center text-gray-500">
-                    No assessment data available yet.
+            {/* Search Section */}
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-8">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Enter Student ID
+                </label>
+                <div className="flex gap-3">
+                    <input
+                        type="number"
+                        value={studentId}
+                        onChange={(e) => setStudentId(e.target.value)}
+                        placeholder="e.g., 1"
+                        className="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    />
+                    <button
+                        onClick={handleSearch}
+                        disabled={loading || !studentId}
+                        className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                    >
+                        <Search className="w-5 h-5" />
+                        {loading ? 'Loading...' : 'Search'}
+                    </button>
                 </div>
-            ) : (
+            </div>
+
+            {/* Error Message */}
+            {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6">
+                    {error}
+                </div>
+            )}
+
+            {/* Student Info */}
+            {studentInfo && (
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border border-gray-200 mb-6">
+                    <h2 className="text-xl font-bold text-gray-900">
+                        {studentInfo.firstName} {studentInfo.lastName}
+                    </h2>
+                    <p className="text-gray-600">PRN: {studentInfo.prn} | Year: {studentInfo.academicYear}</p>
+                </div>
+            )}
+
+            {/* Report Card */}
+            {report && report.length > 0 && (
                 <div className="space-y-6">
                     {report.map((subject, idx) => (
                         <div key={idx} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -109,8 +166,15 @@ const StudentReportCard = () => {
                     ))}
                 </div>
             )}
+
+            {report && report.length === 0 && (
+                <div className="bg-white p-8 rounded-xl border border-gray-200 text-center text-gray-500">
+                    No assessment data available for this student.
+                </div>
+            )}
         </div>
     );
 };
 
-export default StudentReportCard;
+export default FacultyReportCard;
+

@@ -223,6 +223,29 @@ public class FacultyController {
                 return ResponseEntity.ok("Marks Saved Successfully");
     }
 
+    @GetMapping("/report-card/{studentId}")
+    public ResponseEntity<?> getStudentReportCard(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long studentId) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
+
+        User facultyUser = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new RuntimeException("Student not found"));
+
+        // Verify faculty teaches this student
+        List<SubjectAllocation> facultyAllocations = allocationRepository.findByFacultyId(facultyUser.getUserId());
+        boolean isTeaching = facultyAllocations.stream().anyMatch(allocation -> {
+            if (allocation.getSubject().getAcademicYear() == student.getAcademicYear()) return true;
+            return student.getExtraCourses().contains(allocation);
+        });
+
+        if (!isTeaching) {
+            return ResponseEntity.status(403).body("You are not authorized to view this student's report card.");
+        }
+
+        return ResponseEntity.ok(gradingService.generateReportCard(studentId));
+    }
+
     // ==================== PROFESSIONAL DEVELOPMENT ====================
 
     @GetMapping("/professional-development")

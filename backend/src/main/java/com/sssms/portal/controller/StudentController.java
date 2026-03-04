@@ -31,6 +31,7 @@ public class StudentController {
     private final com.sssms.portal.service.GradingService gradingService;
     private final FeeRepository feeRepository;
     private final FeeReminderRepository feeReminderRepository;
+    private final AcademicMarksRepository academicMarksRepository;
 
     @GetMapping("/my-attendance")
     public ResponseEntity<?> getMyAttendance(@AuthenticationPrincipal UserDetails userDetails) {
@@ -55,21 +56,35 @@ public class StudentController {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         Student student = studentRepository.findById(user.getUserId()).orElseThrow();
 
-        List<StudentMark> marks = studentMarkRepository.findByStudentId(student.getId());
+        // Fetch from AcademicMarks table (new system)
+        List<AcademicMarks> marks = academicMarksRepository.findByStudentId(student.getId());
 
         List<Map<String, Object>> response = marks.stream().map(m -> {
             Map<String, Object> map = new java.util.HashMap<>();
             map.put("id", m.getId());
-            map.put("subjectName", m.getAssessment().getAllocation().getSubject().getName());
-            map.put("subjectCode", m.getAssessment().getAllocation().getSubject().getCode());
-
-            map.put("examType", m.getAssessment().getTitle());
+            map.put("subjectName", m.getSubject().getName());
+            map.put("subjectCode", m.getSubject().getCode());
+            map.put("examType", formatExamType(m.getExamType()));
             map.put("obtained", m.getMarksObtained());
-            map.put("max", m.getAssessment().getMaxMarks());
+            map.put("max", m.getMaxMarks());
             return map;
         }).collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
+    }
+
+    private String formatExamType(ExamType type) {
+        switch (type) {
+            case UNIT_TEST_1: return "Unit Test 1";
+            case UNIT_TEST_2: return "Unit Test 2";
+            case UNIT_TEST_3: return "Unit Test 3";
+            case ASSIGNMENT: return "Assignment";
+            case JURY: return "Jury";
+            case THEORY_ESE: return "Theory ESE";
+            case PRACTICAL_ESE: return "Practical ESE";
+            case SESSIONAL_ESE: return "Sessional ESE";
+            default: return type.name();
+        }
     }
 
     @GetMapping("/profile")
@@ -111,6 +126,39 @@ public class StudentController {
             User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
             return ResponseEntity.ok(gradingService.generateReportCard(user.getUserId()));
         }
+
+    @GetMapping("/scorecard")
+    public ResponseEntity<?> getCumulativeScorecard(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        Student student = studentRepository.findById(user.getUserId()).orElseThrow();
+
+        // Get report card data (calculated marks)
+        List<Map<String, Object>> reportCard = gradingService.generateReportCard(user.getUserId());
+
+        // Build comprehensive scorecard
+        Map<String, Object> scorecard = new HashMap<>();
+        scorecard.put("studentName", student.getFirstName() + " " + student.getLastName());
+        scorecard.put("prn", student.getPrn());
+        scorecard.put("academicYear", student.getAcademicYear() != null ? student.getAcademicYear().toString() : "N/A");
+        scorecard.put("subjects", reportCard);
+
+        // Calculate overall statistics
+        double totalInternal = reportCard.stream()
+                .mapToDouble(s -> ((Number) s.getOrDefault("internalMarks", 0)).doubleValue())
+                .sum();
+        double totalExternal = reportCard.stream()
+                .mapToDouble(s -> ((Number) s.getOrDefault("externalMarks", 0)).doubleValue())
+                .sum();
+        double grandTotal = totalInternal + totalExternal;
+
+        scorecard.put("totalInternal", totalInternal);
+        scorecard.put("totalExternal", totalExternal);
+        scorecard.put("grandTotal", grandTotal);
+        scorecard.put("totalSubjects", reportCard.size());
+
+        return ResponseEntity.ok(scorecard);
+    }
 
     @GetMapping("/my-fee-status")
     public ResponseEntity<?> getMyFeeStatus(@AuthenticationPrincipal UserDetails userDetails) {

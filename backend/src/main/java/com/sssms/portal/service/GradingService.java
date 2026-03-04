@@ -65,30 +65,69 @@ public class GradingService {
     }
 
     private Map<String, Object> calculateFinalResult(List<AcademicMarks> marks) {
+        // 1. Unit Tests: Best of 2 (Sum, not average)
         List<Double> unitTests = marks.stream()
-                .filter(m -> m.getExamType().name().startsWith("UNIT_TEST"))
+                .filter(m -> m.getExamType().isUnitTest())
                 .map(AcademicMarks::getMarksObtained)
                 .sorted(Collections.reverseOrder())
                 .collect(Collectors.toList());
 
-        double utTotal = 0;
-        if (unitTests.size() >= 2) utTotal = (unitTests.get(0) + unitTests.get(1)) / 2.0; // Average of Best 2
-        else if (!unitTests.isEmpty()) utTotal = unitTests.get(0);
+        double utBestOf2 = 0;
+        if (unitTests.size() >= 2) {
+            utBestOf2 = unitTests.get(0) + unitTests.get(1); // Sum of Best 2
+        } else if (unitTests.size() == 1) {
+            utBestOf2 = unitTests.get(0);
+        }
 
-        double assignmentTotal = marks.stream()
-                .filter(m -> m.getExamType() == ExamType.ASSIGNMENT)
+        // 2. ICA (Internal Continuous Assessment): Assignments + Jury
+        double icaTotal = marks.stream()
+                .filter(m -> m.getExamType() == ExamType.ASSIGNMENT || m.getExamType() == ExamType.JURY)
                 .mapToDouble(AcademicMarks::getMarksObtained)
                 .sum();
 
+        // 3. Final Internal Mark = Best of 2 UTs + ICA
+        double finalInternalMark = utBestOf2 + icaTotal;
+
+        // 4. External Assessment - Theory
         double eseTheory = marks.stream()
                 .filter(m -> m.getExamType() == ExamType.THEORY_ESE)
                 .mapToDouble(AcademicMarks::getMarksObtained)
-                .findFirst().orElse(0.0);
+                .sum();
 
+        // 5. External Assessment - Practical
+        double esePractical = marks.stream()
+                .filter(m -> m.getExamType() == ExamType.PRACTICAL_ESE)
+                .mapToDouble(AcademicMarks::getMarksObtained)
+                .sum();
+
+        // 6. External Assessment - Sessional/Studio
+        double eseSessional = marks.stream()
+                .filter(m -> m.getExamType() == ExamType.SESSIONAL_ESE)
+                .mapToDouble(AcademicMarks::getMarksObtained)
+                .sum();
+
+        // 7. Total External
+        double totalExternal = eseTheory + esePractical + eseSessional;
+
+        // 8. Grand Total
+        double grandTotal = finalInternalMark + totalExternal;
+
+        // Build Response
         Map<String, Object> result = new HashMap<>();
-        result.put("internalMarks", utTotal + assignmentTotal);
-        result.put("externalMarks", eseTheory);
-        result.put("total", utTotal + assignmentTotal + eseTheory);
+
+        // Internal Breakdown
+        result.put("utBestOf2", utBestOf2);
+        result.put("ica", icaTotal);
+        result.put("internalMarks", finalInternalMark);
+
+        // External Breakdown
+        result.put("theoryMarks", eseTheory);
+        result.put("practicalMarks", esePractical);
+        result.put("sessionalMarks", eseSessional);
+        result.put("externalMarks", totalExternal);
+
+        // Total
+        result.put("total", grandTotal);
 
         return result;
     }

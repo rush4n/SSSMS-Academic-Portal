@@ -28,6 +28,7 @@ import ManageTimetables from './pages/admin/ManageTimetables';
 import AdminScheduleManager from './pages/admin/AdminScheduleManager';
 import AcademicSetup from './pages/admin/AcademicSetup';
 import ManageStudents from './pages/admin/ManageStudents';
+import AdminReportCard from './pages/admin/AdminReportCard';
 
 // Faculty Pages
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
@@ -39,6 +40,7 @@ import GradingSheet from './pages/faculty/GradingSheet';
 import FacultyTimetable from "./pages/faculty/FacultyTimetable";
 import FacultySchedules from "./pages/faculty/FacultySchedules";
 import AttendanceReport from './pages/faculty/AttendanceReport';
+import FacultyReportCard from './pages/faculty/FacultyReportCard';
 
 import NoticesPage from './pages/common/NoticesPage';
 import UploadExamSchedule from './pages/common/UploadExamSchedule';
@@ -89,6 +91,7 @@ function App() {
                 <Route path="student-profile/:id" element={<StudentProfileView />} />
                 <Route path="faculty-profile/:id" element={<FacultyProfileView />} />
                 <Route path="professional-development" element={<ProfessionalDevelopment />} />
+                <Route path="report-card" element={<AdminReportCard />} />
                 <Route path="profile" element={<UserProfile />} />
               </Route>
             </Route>
@@ -122,6 +125,7 @@ function App() {
                 <Route path="student-profile/:id" element={<StudentProfileView />} />
 
                 <Route path="professional-development" element={<ProfessionalDevelopment />} />
+                <Route path="report-card" element={<FacultyReportCard />} />
                 <Route path="profile" element={<UserProfile />} />
 
               </Route>
@@ -137,7 +141,7 @@ function App() {
               <Route path="timetable" element={<StudentTimetable />} />
               <Route path="exam-schedule" element={<StudentExamSchedule />} />
               <Route path="profile" element={<StudentProfile />} />
-              <Route path="results" element={<StudentReportCard />} />
+              <Route path="report-card" element={<StudentReportCard />} />
             </Route>
           </Routes>
         </Router>
