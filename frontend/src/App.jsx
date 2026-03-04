@@ -46,6 +46,7 @@ import ManageSchedules from './pages/common/ManageSchedules';
 import StudentProfileView from './pages/common/StudentProfileView';
 import FacultyProfileView from './pages/common/FacultyProfileView';
 import UserProfile from './pages/common/UserProfile';
+import ProfessionalDevelopment from './pages/common/ProfessionalDevelopment';
 
 // Student Pages
 import StudentLayout from './components/layout/StudentLayout';
@@ -87,6 +88,7 @@ function App() {
                 <Route path="manage-students" element={<ManageStudents />} />
                 <Route path="student-profile/:id" element={<StudentProfileView />} />
                 <Route path="faculty-profile/:id" element={<FacultyProfileView />} />
+                <Route path="professional-development" element={<ProfessionalDevelopment />} />
                 <Route path="profile" element={<UserProfile />} />
               </Route>
             </Route>
@@ -119,6 +121,7 @@ function App() {
 
                 <Route path="student-profile/:id" element={<StudentProfileView />} />
 
+                <Route path="professional-development" element={<ProfessionalDevelopment />} />
                 <Route path="profile" element={<UserProfile />} />
 
               </Route>

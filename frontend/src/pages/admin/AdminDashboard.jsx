@@ -9,7 +9,8 @@ import {
     UserPlus,
     CalendarDays,
     BookOpen,
-    Briefcase
+    Briefcase,
+    Award
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -78,6 +79,13 @@ const AdminDashboard = () => {
             icon: CalendarDays,
             href: '/admin/schedule-manager',
             color: 'purple'
+        },
+        {
+            title: 'Professional Development',
+            description: 'Faculty workshops, QIPs & programs',
+            icon: Award,
+            href: '/admin/professional-development',
+            color: 'indigo'
         },
     ];
 

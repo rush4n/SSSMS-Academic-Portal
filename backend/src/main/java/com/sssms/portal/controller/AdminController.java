@@ -4,9 +4,13 @@ import com.sssms.portal.dto.request.AllocationRequest;
 import com.sssms.portal.dto.request.FacultyEnrollmentRequest;
 import com.sssms.portal.dto.request.StudentEnrollmentRequest;
 import com.sssms.portal.entity.AcademicYear;
+import com.sssms.portal.entity.Faculty;
+import com.sssms.portal.entity.ProfessionalDevelopment;
 import com.sssms.portal.entity.Student;
 import com.sssms.portal.entity.Subject;
 import com.sssms.portal.entity.SubjectAllocation;
+import com.sssms.portal.repository.FacultyRepository;
+import com.sssms.portal.repository.ProfessionalDevelopmentRepository;
 import com.sssms.portal.repository.StudentRepository;
 import com.sssms.portal.repository.SubjectAllocationRepository;
 import com.sssms.portal.repository.SubjectRepository;
@@ -18,8 +22,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.sssms.portal.repository.UserRepository;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,6 +40,8 @@ public class AdminController {
     private final StudentRepository studentRepository;
     private final SubjectAllocationRepository allocationRepository;
     private final UserRepository userRepository;
+    private final FacultyRepository facultyRepository;
+    private final ProfessionalDevelopmentRepository pdRepository;
     private final com.sssms.portal.service.StudentService studentService;
 
     @PostMapping("/subjects")
@@ -179,4 +187,54 @@ public class AdminController {
         public ResponseEntity<?> getFacultyProfile(@PathVariable Long id) {
             return ResponseEntity.ok(adminService.getFacultyProfile(id));
      }
+
+    // ==================== PROFESSIONAL DEVELOPMENT ====================
+
+    @GetMapping("/faculty/{facultyId}/pd")
+    public ResponseEntity<?> getFacultyPD(@PathVariable Long facultyId) {
+        List<ProfessionalDevelopment> entries = pdRepository.findByFacultyIdOrderByStartDateDesc(facultyId);
+        return ResponseEntity.ok(entries.stream().map(this::mapPD).collect(Collectors.toList()));
+    }
+
+    @PostMapping("/faculty/{facultyId}/pd")
+    public ResponseEntity<?> addFacultyPD(
+            @PathVariable Long facultyId,
+            @RequestBody Map<String, String> payload) {
+        Faculty faculty = facultyRepository.findById(facultyId)
+                .orElseThrow(() -> new RuntimeException("Faculty not found"));
+
+        ProfessionalDevelopment pd = ProfessionalDevelopment.builder()
+                .faculty(faculty)
+                .title(payload.get("title"))
+                .type(ProfessionalDevelopment.PDType.valueOf(payload.get("type")))
+                .organization(payload.get("organization"))
+                .startDate(payload.get("startDate") != null && !payload.get("startDate").isEmpty() ? LocalDate.parse(payload.get("startDate")) : null)
+                .endDate(payload.get("endDate") != null && !payload.get("endDate").isEmpty() ? LocalDate.parse(payload.get("endDate")) : null)
+                .description(payload.get("description"))
+                .addedBy("admin")
+                .build();
+        pdRepository.save(pd);
+        return ResponseEntity.ok("Entry added for faculty");
+    }
+
+    @DeleteMapping("/pd/{id}")
+    public ResponseEntity<?> deletePD(@PathVariable Long id) {
+        pdRepository.deleteById(id);
+        return ResponseEntity.ok("Entry deleted");
+    }
+
+    private Map<String, Object> mapPD(ProfessionalDevelopment pd) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", pd.getId());
+        map.put("title", pd.getTitle());
+        map.put("type", pd.getType().name());
+        map.put("organization", pd.getOrganization());
+        map.put("startDate", pd.getStartDate());
+        map.put("endDate", pd.getEndDate());
+        map.put("description", pd.getDescription());
+        map.put("addedBy", pd.getAddedBy());
+        map.put("createdAt", pd.getCreatedAt());
+        map.put("facultyName", pd.getFaculty().getFirstName() + " " + pd.getFaculty().getLastName());
+        return map;
+    }
 }

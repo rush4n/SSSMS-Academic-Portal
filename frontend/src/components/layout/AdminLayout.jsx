@@ -17,7 +17,8 @@ import {
   CalendarDays,
   Menu,
   X,
-  ScrollText
+  ScrollText,
+  Award
 } from 'lucide-react';
 
 const AdminLayout = () => {
@@ -46,6 +47,7 @@ const AdminLayout = () => {
     { name: 'Manage Workload', href: '/admin/manage-faculty', icon: Briefcase },
     { name: 'Fee Management', href: '/admin/fees', icon: Banknote },
     { name: 'Schedule Manager', href: '/admin/schedule-manager', icon: CalendarDays },
+    { name: 'Professional Dev.', href: '/admin/professional-development', icon: Award },
     { name: 'GPA Ledger', href: '/admin/gpa', icon: BarChart3 },
     { name: 'Activity Logs', href: '/admin/logs', icon: ScrollText },
   ];

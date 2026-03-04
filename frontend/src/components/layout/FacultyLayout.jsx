@@ -11,7 +11,8 @@ import {
     Target,
     CalendarDays,
     Menu,
-    X
+    X,
+    Award
 } from 'lucide-react';
 
 const FacultyLayout = () => {
@@ -33,6 +34,7 @@ const FacultyLayout = () => {
         { name: 'Attendance', href: '/faculty/attendance', icon: UserCheck },
         { name: 'Results & Grading', href: '/faculty/results', icon: Target },
         { name: 'Schedules', href: '/faculty/schedules', icon: CalendarDays },
+        { name: 'Professional Dev.', href: '/faculty/professional-development', icon: Award },
         { name: 'Notices', href: '/faculty/notices', icon: Bell },
     ];
 

@@ -35,6 +35,7 @@ public class FacultyController {
     private final StudentRepository studentRepository;
     private final com.sssms.portal.service.StudentService studentService;
     private final com.sssms.portal.service.GradingService gradingService;
+    private final ProfessionalDevelopmentRepository pdRepository;
 
     @GetMapping("/my-subjects")
     public ResponseEntity<?> getMySubjects(@AuthenticationPrincipal UserDetails userDetails) {
@@ -157,6 +158,20 @@ public class FacultyController {
             response.put("panCardNo", faculty.getPanCardNo());
             response.put("subjects", subjects);
 
+            // Professional Development summary
+            List<ProfessionalDevelopment> pdEntries = pdRepository.findByFacultyIdOrderByStartDateDesc(user.getUserId());
+            List<Map<String, Object>> pdSummary = pdEntries.stream().map(pd -> {
+                Map<String, Object> m = new java.util.HashMap<>();
+                m.put("id", pd.getId());
+                m.put("title", pd.getTitle());
+                m.put("type", pd.getType().name());
+                m.put("organization", pd.getOrganization());
+                m.put("startDate", pd.getStartDate());
+                m.put("endDate", pd.getEndDate());
+                return m;
+            }).collect(Collectors.toList());
+            response.put("professionalDevelopment", pdSummary);
+
             return ResponseEntity.ok(response);
         }
 
@@ -166,4 +181,63 @@ public class FacultyController {
                 return ResponseEntity.ok("Marks Saved Successfully");
     }
 
+    // ==================== PROFESSIONAL DEVELOPMENT ====================
+
+    @GetMapping("/professional-development")
+    public ResponseEntity<?> getMyPD(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        List<ProfessionalDevelopment> entries = pdRepository.findByFacultyIdOrderByStartDateDesc(user.getUserId());
+        return ResponseEntity.ok(entries.stream().map(this::mapPD).collect(Collectors.toList()));
+    }
+
+    @PostMapping("/professional-development")
+    public ResponseEntity<?> addMyPD(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody Map<String, String> payload) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        Faculty faculty = facultyRepository.findById(user.getUserId()).orElseThrow();
+
+        ProfessionalDevelopment pd = ProfessionalDevelopment.builder()
+                .faculty(faculty)
+                .title(payload.get("title"))
+                .type(ProfessionalDevelopment.PDType.valueOf(payload.get("type")))
+                .organization(payload.get("organization"))
+                .startDate(payload.get("startDate") != null && !payload.get("startDate").isEmpty() ? LocalDate.parse(payload.get("startDate")) : null)
+                .endDate(payload.get("endDate") != null && !payload.get("endDate").isEmpty() ? LocalDate.parse(payload.get("endDate")) : null)
+                .description(payload.get("description"))
+                .addedBy(userDetails.getUsername())
+                .build();
+        pdRepository.save(pd);
+        return ResponseEntity.ok("Entry added successfully");
+    }
+
+    @DeleteMapping("/professional-development/{id}")
+    public ResponseEntity<?> deleteMyPD(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        ProfessionalDevelopment pd = pdRepository.findById(id).orElseThrow();
+        if (!pd.getFaculty().getId().equals(user.getUserId())) {
+            return ResponseEntity.status(403).body("Cannot delete another faculty's entry");
+        }
+        pdRepository.deleteById(id);
+        return ResponseEntity.ok("Entry deleted");
+    }
+
+    private Map<String, Object> mapPD(ProfessionalDevelopment pd) {
+        Map<String, Object> map = new java.util.HashMap<>();
+        map.put("id", pd.getId());
+        map.put("title", pd.getTitle());
+        map.put("type", pd.getType().name());
+        map.put("organization", pd.getOrganization());
+        map.put("startDate", pd.getStartDate());
+        map.put("endDate", pd.getEndDate());
+        map.put("description", pd.getDescription());
+        map.put("addedBy", pd.getAddedBy());
+        map.put("createdAt", pd.getCreatedAt());
+        return map;
+    }
 }

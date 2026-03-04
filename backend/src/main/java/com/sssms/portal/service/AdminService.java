@@ -31,6 +31,7 @@ public class AdminService {
     private final ResultParserService parserService;
     private final FileStorageService fileStorageService;
     private final ExamResultRepository resultRepository;
+    private final ProfessionalDevelopmentRepository pdRepository;
 
     @Transactional
     public String enrollStudent(StudentEnrollmentRequest request) {
@@ -167,6 +168,20 @@ public class AdminService {
             response.put("aadharNo", faculty.getAadharNo());
             response.put("panCardNo", faculty.getPanCardNo());
             response.put("subjects", subjects);
+
+            // Professional Development summary
+            List<ProfessionalDevelopment> pdEntries = pdRepository.findByFacultyIdOrderByStartDateDesc(userId);
+            List<Map<String, Object>> pdSummary = pdEntries.stream().map(pd -> {
+                Map<String, Object> m = new HashMap<>();
+                m.put("id", pd.getId());
+                m.put("title", pd.getTitle());
+                m.put("type", pd.getType().name());
+                m.put("organization", pd.getOrganization());
+                m.put("startDate", pd.getStartDate());
+                m.put("endDate", pd.getEndDate());
+                return m;
+            }).collect(Collectors.toList());
+            response.put("professionalDevelopment", pdSummary);
 
             return response;
         }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { User, Mail, Briefcase, BookOpen, Calendar, Phone, ArrowLeft, GraduationCap, ShieldCheck, FileText } from 'lucide-react';
+import { User, Mail, Briefcase, BookOpen, Calendar, Phone, ArrowLeft, GraduationCap, ShieldCheck, FileText, Award } from 'lucide-react';
 
 const FacultyProfileView = () => {
     const { id } = useParams();
@@ -108,6 +108,39 @@ const FacultyProfileView = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Professional Development */}
+            {profile.professionalDevelopment && profile.professionalDevelopment.length > 0 && (
+                <div className="mt-6 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <h3 className="text-lg font-bold mb-4 flex items-center">
+                        <Award className="w-5 h-5 mr-2 text-purple-600"/> Professional Development
+                        <span className="ml-2 text-sm font-normal text-gray-400">({profile.professionalDevelopment.length})</span>
+                    </h3>
+                    <div className="space-y-2">
+                        {profile.professionalDevelopment.slice(0, 5).map((pd, i) => (
+                            <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                <div className="flex items-center min-w-0">
+                                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full mr-3 shrink-0 ${
+                                        pd.type === 'WORKSHOP' ? 'bg-blue-100 text-blue-700' :
+                                        pd.type === 'QIP' ? 'bg-purple-100 text-purple-700' :
+                                        pd.type === 'FDP' ? 'bg-indigo-100 text-indigo-700' :
+                                        pd.type === 'CONFERENCE' ? 'bg-green-100 text-green-700' :
+                                        'bg-gray-100 text-gray-700'
+                                    }`}>{pd.type}</span>
+                                    <span className="text-sm font-medium text-gray-800 truncate">{pd.title}</span>
+                                    {pd.organization && <span className="text-xs text-gray-400 ml-2 shrink-0">• {pd.organization}</span>}
+                                </div>
+                                {pd.startDate && (
+                                    <span className="text-xs text-gray-400 shrink-0 ml-3">{new Date(pd.startDate).toLocaleDateString()}</span>
+                                )}
+                            </div>
+                        ))}
+                        {profile.professionalDevelopment.length > 5 && (
+                            <p className="text-xs text-gray-400 text-center pt-1">+ {profile.professionalDevelopment.length - 5} more entries</p>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -8,7 +8,8 @@ import {
     Book,
     UserCheck,
     Bell,
-    BarChart3
+    BarChart3,
+    Award
 } from 'lucide-react';
 
 const FacultyDashboard = () => {
@@ -65,6 +66,13 @@ const FacultyDashboard = () => {
             icon: CalendarDays,
             color: 'indigo',
             href: '/faculty/schedules'
+        },
+        {
+            title: 'Professional Development',
+            subtitle: 'Log workshops, QIPs & certifications',
+            icon: Award,
+            color: 'purple',
+            href: '/faculty/professional-development'
         },
     ];
 
