@@ -57,6 +57,8 @@ public class FeeService {
             map.put("paid", f.getPaidAmount());
             map.put("balance", f.getTotalFee() - f.getPaidAmount());
             map.put("status", f.getPaidAmount() >= f.getTotalFee() ? "PAID" : "PENDING");
+            map.put("scholarshipStatus", f.getStudent().getScholarshipStatus() != null
+                    ? f.getStudent().getScholarshipStatus().name() : "NOT_APPLIED");
             return map;
         }).collect(Collectors.toList());
     }

@@ -1,8 +1,11 @@
 package com.sssms.portal.controller;
 
 import com.sssms.portal.entity.FeeReminder;
+import com.sssms.portal.entity.ScholarshipStatus;
+import com.sssms.portal.entity.Student;
 import com.sssms.portal.entity.User;
 import com.sssms.portal.repository.FeeReminderRepository;
+import com.sssms.portal.repository.StudentRepository;
 import com.sssms.portal.repository.UserRepository;
 import com.sssms.portal.service.FeeService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class FeeController {
     private final FeeService feeService;
     private final FeeReminderRepository feeReminderRepository;
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
 
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> getAllFees() {
@@ -119,5 +123,29 @@ public class FeeController {
                 "totalPending", totalPending,
                 "totalStudents", allRecords.size()
         ));
+    }
+
+    // ==================== SCHOLARSHIP STATUS ====================
+
+    @PutMapping("/scholarship/{studentId}")
+    public ResponseEntity<?> updateScholarshipStatus(
+            @PathVariable Long studentId,
+            @RequestBody Map<String, String> payload) {
+        try {
+            Student student = studentRepository.findById(studentId)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+            String statusStr = payload.get("status");
+            if (statusStr == null || statusStr.isEmpty()) {
+                return ResponseEntity.badRequest().body("Status is required");
+            }
+            ScholarshipStatus newStatus = ScholarshipStatus.valueOf(statusStr);
+            student.setScholarshipStatus(newStatus);
+            studentRepository.save(student);
+            return ResponseEntity.ok("Scholarship status updated to " + newStatus);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid scholarship status: " + payload.get("status"));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Failed to update: " + e.getMessage());
+        }
     }
 }

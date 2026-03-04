@@ -49,7 +49,10 @@ public class Student {
     @Enumerated(EnumType.STRING)
     private AdmissionCategory admissionCategory;
 
-    private boolean scholarshipApplied;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "scholarship_status", columnDefinition = "VARCHAR(20) DEFAULT 'NOT_APPLIED'")
+    @Builder.Default
+    private ScholarshipStatus scholarshipStatus = ScholarshipStatus.NOT_APPLIED;
 
     @ManyToMany(fetch = FetchType.EAGER)
         @JoinTable(

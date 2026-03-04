@@ -131,6 +131,11 @@ public class StudentController {
             result.put("hasFeeRecord", false);
         }
 
+        // Scholarship status
+        Student student = studentRepository.findById(user.getUserId()).orElse(null);
+        result.put("scholarshipStatus", student != null && student.getScholarshipStatus() != null
+                ? student.getScholarshipStatus().name() : "NOT_APPLIED");
+
         // Active reminders
         List<Map<String, Object>> reminders = feeReminderRepository.findByActiveTrueOrderByCreatedAtDesc()
                 .stream().map(r -> {

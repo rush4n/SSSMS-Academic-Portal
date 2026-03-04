@@ -58,7 +58,7 @@ public class AdminService {
                 .bloodGroup(request.getBloodGroup())
                 .parentPhoneNumber(request.getParentPhoneNumber())
                 .admissionCategory(request.getAdmissionCategory())
-                .scholarshipApplied(false)
+                .scholarshipStatus(ScholarshipStatus.NOT_APPLIED)
                 .build();
         studentRepository.save(newStudent);
 

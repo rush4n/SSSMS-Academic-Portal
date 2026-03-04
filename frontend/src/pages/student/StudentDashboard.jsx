@@ -12,7 +12,8 @@ import {
     TrendingUp,
     TrendingDown,
     AlertTriangle,
-    Banknote
+    Banknote,
+    GraduationCap
 } from 'lucide-react';
 
 const StudentDashboard = () => {
@@ -110,12 +111,22 @@ const StudentDashboard = () => {
                                         )}
                                     </div>
                                     <p className="text-red-700 text-sm mt-1">{reminder.message}</p>
-                                    <div className="flex items-center gap-4 mt-3">
+                                    <div className="flex items-center flex-wrap gap-3 mt-3">
                                         <div className="flex items-center bg-white px-3 py-1.5 rounded-lg border border-red-200 text-sm">
                                             <Banknote className="w-4 h-4 text-red-500 mr-1.5" />
                                             <span className="text-gray-500 mr-1">Balance:</span>
                                             <span className="font-bold text-red-700">₹{feeStatus.balance?.toLocaleString()}</span>
                                         </div>
+                                        {feeStatus.scholarshipStatus && feeStatus.scholarshipStatus !== 'NOT_APPLIED' && (
+                                            <div className={`flex items-center px-3 py-1.5 rounded-lg text-sm font-medium ${
+                                                feeStatus.scholarshipStatus === 'APPROVED' ? 'bg-green-50 text-green-700 border border-green-200' :
+                                                feeStatus.scholarshipStatus === 'APPLIED' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                                                'bg-red-50 text-red-700 border border-red-200'
+                                            }`}>
+                                                <GraduationCap className="w-4 h-4 mr-1.5" />
+                                                Scholarship: {feeStatus.scholarshipStatus === 'APPROVED' ? 'Approved' : feeStatus.scholarshipStatus === 'APPLIED' ? 'Applied' : 'Rejected'}
+                                            </div>
+                                        )}
                                         <span className="text-xs text-gray-400">
                                             {new Date(reminder.createdAt).toLocaleDateString()}
                                         </span>
@@ -136,9 +147,21 @@ const StudentDashboard = () => {
                         </div>
                         <div className="flex-1">
                             <h3 className="text-base font-bold text-amber-800">Fee Payment Pending</h3>
-                            <p className="text-amber-700 text-sm mt-0.5">
-                                You have an outstanding balance of <span className="font-bold">₹{feeStatus.balance?.toLocaleString()}</span>. Please clear your dues at the earliest.
-                            </p>
+                            <div className="flex items-center flex-wrap gap-3 mt-1">
+                                <p className="text-amber-700 text-sm">
+                                    Outstanding balance: <span className="font-bold">₹{feeStatus.balance?.toLocaleString()}</span>
+                                </p>
+                                {feeStatus.scholarshipStatus && feeStatus.scholarshipStatus !== 'NOT_APPLIED' && (
+                                    <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full ${
+                                        feeStatus.scholarshipStatus === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                                        feeStatus.scholarshipStatus === 'APPLIED' ? 'bg-blue-100 text-blue-700' :
+                                        'bg-red-100 text-red-700'
+                                    }`}>
+                                        <GraduationCap className="w-3 h-3 mr-1" />
+                                        Scholarship {feeStatus.scholarshipStatus === 'APPROVED' ? 'Approved' : feeStatus.scholarshipStatus === 'APPLIED' ? 'Applied' : 'Rejected'}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

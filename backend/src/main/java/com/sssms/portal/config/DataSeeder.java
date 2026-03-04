@@ -102,7 +102,7 @@ public class DataSeeder implements CommandLineRunner {
                     .bloodGroup("O+")
                     .parentPhoneNumber("8877665544")
                     .admissionCategory(AdmissionCategory.CAP_ROUND_1)
-                    .scholarshipApplied(false)
+                    .scholarshipStatus(ScholarshipStatus.NOT_APPLIED)
                     .build();
             studentRepository.save(studentProfile1);
 

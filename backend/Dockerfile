@@ -2,6 +2,7 @@
 FROM maven:3.9-eclipse-temurin-25 AS build
 WORKDIR /app
 COPY pom.xml .
+ARG CACHEBUST=1
 COPY src ./src
 RUN mvn clean package -DskipTests
 

@@ -103,6 +103,28 @@ const FeeManagement = () => {
         }
     };
 
+    const handleScholarshipUpdate = async (studentId, newStatus) => {
+        try {
+            await api.put(`/admin/fees/scholarship/${studentId}`, { status: newStatus });
+            setStatus({ type: 'success', message: 'Scholarship status updated!' });
+            setScholarshipModal(null);
+            fetchFees();
+            setTimeout(() => setStatus({ type: '', message: '' }), 3000);
+        } catch {
+            setStatus({ type: 'error', message: 'Failed to update scholarship status.' });
+        }
+    };
+
+    // Scholarship Modal State
+    const [scholarshipModal, setScholarshipModal] = useState(null);
+
+    const scholarshipConfig = {
+        NOT_APPLIED: { label: 'Not Applied', bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-200' },
+        APPLIED: { label: 'Applied', bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' },
+        APPROVED: { label: 'Approved', bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' },
+        REJECTED: { label: 'Rejected', bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' },
+    };
+
     const filteredRecords = records.filter(r =>
         r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.prn.toLowerCase().includes(searchTerm.toLowerCase())
@@ -307,6 +329,7 @@ const FeeManagement = () => {
                             <th className="p-4 font-semibold text-gray-600">Paid</th>
                             <th className="p-4 font-semibold text-gray-600">Balance</th>
                             <th className="p-4 font-semibold text-gray-600">Status</th>
+                            <th className="p-4 font-semibold text-gray-600">Scholarship</th>
                             <th className="p-4 font-semibold text-gray-600">Action</th>
                         </tr>
                         </thead>
@@ -325,6 +348,19 @@ const FeeManagement = () => {
                         {record.status === 'PAID' ? <CheckCircle className="w-3 h-3 mr-1" /> : <AlertCircle className="w-3 h-3 mr-1" />}
                           {record.status}
                       </span>
+                                </td>
+                                <td className="p-4">
+                                    {(() => {
+                                        const cfg = scholarshipConfig[record.scholarshipStatus] || scholarshipConfig.NOT_APPLIED;
+                                        return (
+                                            <button
+                                                onClick={() => setScholarshipModal(record)}
+                                                className={`${cfg.text} hover:opacity-80 font-medium text-sm border ${cfg.border} px-3 py-1 rounded hover:bg-opacity-80 transition-colors`}
+                                            >
+                                                {cfg.label}
+                                            </button>
+                                        );
+                                    })()}
                                 </td>
                                 <td className="p-4">
                                     {record.status !== 'PAID' && (
@@ -378,6 +414,77 @@ const FeeManagement = () => {
                                 className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
                             >
                                 Confirm Payment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Scholarship Status Modal */}
+            {scholarshipModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+                    <div className="bg-white p-6 rounded-xl shadow-xl max-w-md w-full border border-gray-200">
+                        <h3 className="text-xl font-bold mb-4 text-gray-900">Update Scholarship Status</h3>
+                        <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100">
+                            <p className="text-gray-600 text-sm">Student: <span className="font-semibold text-gray-900">{scholarshipModal.name}</span></p>
+                            <p className="text-gray-600 text-sm mt-1">PRN: <span className="font-semibold text-gray-900">{scholarshipModal.prn}</span></p>
+                            <p className="text-gray-600 text-sm mt-1">Current Status: <span className={`font-semibold ${(scholarshipConfig[scholarshipModal.scholarshipStatus] || scholarshipConfig.NOT_APPLIED).text}`}>{(scholarshipConfig[scholarshipModal.scholarshipStatus] || scholarshipConfig.NOT_APPLIED).label}</span></p>
+                        </div>
+
+                        <p className="text-sm font-medium text-gray-700 mb-3">Select New Status</p>
+                        <div className="flex flex-col gap-2 mb-6">
+                            <button
+                                onClick={() => handleScholarshipUpdate(scholarshipModal.studentId, 'NOT_APPLIED')}
+                                disabled={scholarshipModal.scholarshipStatus === 'NOT_APPLIED'}
+                                className={`px-4 py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                                    scholarshipModal.scholarshipStatus === 'NOT_APPLIED'
+                                        ? 'bg-gray-100 text-gray-600 border-gray-300 opacity-60 cursor-not-allowed'
+                                        : 'border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-100'
+                                }`}
+                            >
+                                Not Applied
+                            </button>
+                            <button
+                                onClick={() => handleScholarshipUpdate(scholarshipModal.studentId, 'APPLIED')}
+                                disabled={scholarshipModal.scholarshipStatus === 'APPLIED'}
+                                className={`px-4 py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                                    scholarshipModal.scholarshipStatus === 'APPLIED'
+                                        ? 'bg-blue-100 text-blue-700 border-blue-300 opacity-60 cursor-not-allowed'
+                                        : 'border-gray-200 text-gray-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700'
+                                }`}
+                            >
+                                Applied
+                            </button>
+                            <button
+                                onClick={() => handleScholarshipUpdate(scholarshipModal.studentId, 'APPROVED')}
+                                disabled={scholarshipModal.scholarshipStatus === 'APPROVED'}
+                                className={`px-4 py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                                    scholarshipModal.scholarshipStatus === 'APPROVED'
+                                        ? 'bg-green-100 text-green-700 border-green-300 opacity-60 cursor-not-allowed'
+                                        : 'border-gray-200 text-gray-700 hover:border-green-200 hover:bg-green-50 hover:text-green-700'
+                                }`}
+                            >
+                                Approved
+                            </button>
+                            <button
+                                onClick={() => handleScholarshipUpdate(scholarshipModal.studentId, 'REJECTED')}
+                                disabled={scholarshipModal.scholarshipStatus === 'REJECTED'}
+                                className={`px-4 py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                                    scholarshipModal.scholarshipStatus === 'REJECTED'
+                                        ? 'bg-red-100 text-red-700 border-red-300 opacity-60 cursor-not-allowed'
+                                        : 'border-gray-200 text-gray-700 hover:border-red-200 hover:bg-red-50 hover:text-red-700'
+                                }`}
+                            >
+                                Rejected
+                            </button>
+                        </div>
+
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => setScholarshipModal(null)}
+                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium"
+                            >
+                                Close
                             </button>
                         </div>
                     </div>
