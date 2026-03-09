@@ -9,7 +9,6 @@ const StudentTimetable = () => {
             try {
                 const res = await api.get('/timetable/student/me');
                 if (res.data.exists) {
-                    // Point to the backend endpoint that serves the file inline
                     setPdfUrl(`http://localhost:8080/api/timetable/view/${res.data.fileName}`);
                 }
             } catch (e) {}

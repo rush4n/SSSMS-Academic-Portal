@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp, BookOpen, Star, Download, FileText } from 'luci
 
 const StudentResults = () => {
     const [sgpaResults, setSgpaResults] = useState([]);
-    const [assessments, setAssessments] = useState({}); // Grouped by Subject
+    const [assessments, setAssessments] = useState({});
     const [scorecard, setScorecard] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -57,7 +57,6 @@ const StudentResults = () => {
     const downloadScorecard = () => {
         if (!scorecard) return;
 
-        // Create HTML content for the scorecard
         const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
