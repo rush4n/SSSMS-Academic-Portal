@@ -5,6 +5,7 @@ import com.sssms.portal.dto.request.FacultyEnrollmentRequest;
 import com.sssms.portal.dto.request.StudentEnrollmentRequest;
 import com.sssms.portal.entity.*;
 import com.sssms.portal.repository.*;
+import com.sssms.portal.util.PasswordGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,9 +46,12 @@ public class AdminService {
             throw new RuntimeException("PRN already exists. Please use a different PRN.");
         }
 
+        // Auto-generate password from lastName + dob
+        String generatedPassword = PasswordGeneratorUtil.generate(request.getLastName(), request.getDob());
+
         User newUser = User.builder()
                 .email(request.getEmail())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .passwordHash(passwordEncoder.encode(generatedPassword))
                 .role(Role.STUDENT)
                 .isActive(true)
                 .build();
@@ -80,14 +84,17 @@ public class AdminService {
                 .paidAmount(0.0)
                 .scholarshipAmount(0.0)
                 .build());
-        return "Student enrolled successfully with ID: " + savedUser.getUserId();
+        return "Student enrolled successfully. Default password: " + generatedPassword;
     }
 
     @Transactional
     public String enrollFaculty(FacultyEnrollmentRequest request) {
+        // Auto-generate password from lastName + dob
+        String generatedPassword = PasswordGeneratorUtil.generate(request.getLastName(), request.getDob());
+
         User newUser = User.builder()
                 .email(request.getEmail())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .passwordHash(passwordEncoder.encode(generatedPassword))
                 .role(Role.FACULTY)
                 .isActive(true)
                 .build();
@@ -97,6 +104,7 @@ public class AdminService {
                 .user(savedUser)
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
+                .dob(request.getDob())
                 .designation(request.getDesignation())
                 .department(request.getDepartment())
                 .qualification(request.getQualification())
@@ -109,7 +117,7 @@ public class AdminService {
                 .panCardNo(request.getPanCardNo())
                 .build();
         facultyRepository.save(newFaculty);
-        return "Faculty enrolled successfully";
+        return "Faculty enrolled successfully. Default password: " + generatedPassword;
     }
 
     public String allocateSubject(AllocationRequest request) {
@@ -173,6 +181,7 @@ public class AdminService {
             response.put("firstName", faculty.getFirstName());
             response.put("lastName", faculty.getLastName());
             response.put("email", faculty.getUser().getEmail());
+            response.put("dob", faculty.getDob());
             response.put("designation", faculty.getDesignation());
             response.put("department", faculty.getDepartment());
             response.put("qualification", faculty.getQualification());
