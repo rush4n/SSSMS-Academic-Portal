@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
 import {
     Clock, Calendar, BookOpen, GraduationCap,
-    CheckCircle, XCircle, Users, User, Trash2, Eye, Camera
+    CheckCircle, XCircle, Users, User, Trash2, Eye, Camera, ArrowLeft
 } from 'lucide-react';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import CameraCapture from '../../components/ui/CameraCapture';
@@ -24,6 +25,7 @@ const colorMap = {
 const formatYear = (str) => str.replace(/_/g, ' ').replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
 
 const AdminScheduleManager = () => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('timetable');
     const [confirm, setConfirm] = useState(null);
     const [showCamera, setShowCamera] = useState(false);
@@ -150,6 +152,9 @@ const AdminScheduleManager = () => {
 
     return (
         <div className="max-w-5xl mx-auto">
+            <button onClick={() => navigate('/admin/dashboard')} className="mb-4 flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+            </button>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Schedule Manager</h1>
             <p className="text-gray-600 mb-8">Upload and manage timetables, exam schedules, college calendar, and academic schedules.</p>
 

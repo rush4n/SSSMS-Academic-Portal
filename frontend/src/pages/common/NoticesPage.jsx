@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
 import { useAuth } from '../../auth/useAuth';
-import { Bell, Megaphone, Send, Clock, User, CheckCircle, XCircle, Paperclip, Download, Camera, Trash2, Timer } from 'lucide-react';
+import { Bell, Megaphone, Send, Clock, User, CheckCircle, XCircle, Paperclip, Download, Camera, Trash2, Timer, ArrowLeft } from 'lucide-react';
 import CameraCapture from '../../components/ui/CameraCapture';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
 const NoticesPage = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [notices, setNotices] = useState([]);
     const [showCamera, setShowCamera] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(null);
@@ -23,6 +25,7 @@ const NoticesPage = () => {
 
     const canPost = user.role === 'ROLE_ADMIN' || user.role === 'ROLE_FACULTY';
     const canDelete = user.role === 'ROLE_ADMIN' || user.role === 'ROLE_FACULTY';
+    const dashboardPath = user.role === 'ROLE_ADMIN' ? '/admin/dashboard' : user.role === 'ROLE_FACULTY' ? '/faculty/dashboard' : '/student/dashboard';
 
     const fetchNotices = async () => {
         try {
@@ -118,6 +121,9 @@ const NoticesPage = () => {
 
     return (
         <div className="max-w-4xl mx-auto">
+            <button onClick={() => navigate(dashboardPath)} className="mb-4 flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+            </button>
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Digital Notice Board</h1>

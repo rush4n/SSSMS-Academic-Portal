@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { GraduationCap, Save, CheckCircle, XCircle, Filter } from 'lucide-react';
+import { GraduationCap, Save, CheckCircle, XCircle, Filter, ArrowLeft } from 'lucide-react';
 
 const GPALedger = () => {
+    const navigate = useNavigate();
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedSemester, setSelectedSemester] = useState(1);
     const [students, setStudents] = useState([]);
@@ -133,6 +135,9 @@ const GPALedger = () => {
 
     return (
         <div className="max-w-7xl mx-auto">
+            <button onClick={() => navigate('/admin/dashboard')} className="mb-4 flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+            </button>
             <div className="flex items-center gap-3 mb-6">
                 <GraduationCap className="w-8 h-8 text-blue-600" />
                 <div>

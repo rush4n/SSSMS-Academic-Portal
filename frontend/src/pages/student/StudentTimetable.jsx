@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
+import { ArrowLeft } from 'lucide-react';
 
 const StudentTimetable = () => {
+    const navigate = useNavigate();
     const [pdfUrl, setPdfUrl] = useState(null);
 
     useEffect(() => {
@@ -18,6 +21,9 @@ const StudentTimetable = () => {
 
     return (
         <div className="max-w-6xl mx-auto h-[calc(100vh-100px)]">
+            <button onClick={() => navigate('/student/dashboard')} className="mb-4 flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+            </button>
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Class Timetable</h1>
 
             {pdfUrl ? (

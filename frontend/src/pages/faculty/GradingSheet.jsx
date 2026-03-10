@@ -55,7 +55,7 @@ const GradingSheet = () => {
         try {
             await api.post('/faculty/marks/batch', requests);
             setStatus({ type: 'success', msg: 'Marks Saved Successfully!' });
-            setTimeout(() => navigate('/faculty/dashboard'), 2000);
+            setTimeout(() => setStatus(null), 3000);
         } catch {
             setStatus({ type: 'error', msg: 'Failed to save marks.' });
         } finally {

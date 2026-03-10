@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { ChevronDown, ChevronUp, BookOpen, Star, Download, FileText } from 'lucide-react';
+import { ChevronDown, ChevronUp, BookOpen, Star, Download, FileText, ArrowLeft } from 'lucide-react';
 
 const StudentResults = () => {
+    const navigate = useNavigate();
     const [sgpaResults, setSgpaResults] = useState([]);
     const [assessments, setAssessments] = useState({});
     const [scorecard, setScorecard] = useState(null);
@@ -202,6 +204,9 @@ const StudentResults = () => {
 
     return (
         <div className="max-w-4xl mx-auto pb-10">
+            <button onClick={() => navigate('/student/dashboard')} className="mb-4 flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+            </button>
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Academic Performance</h1>
 
             {/* SECTION 1: SEMESTER-WISE SGPA/CGPA RESULTS */}
