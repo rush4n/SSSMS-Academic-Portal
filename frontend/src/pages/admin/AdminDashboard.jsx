@@ -93,7 +93,7 @@ const AdminDashboard = () => {
     const quickActions = [
         {
             title: 'GPA Ledger',
-            description: 'Process university result PDFs',
+            description: 'Process university results',
             icon: BarChart3,
             href: '/admin/gpa',
             color: 'green'

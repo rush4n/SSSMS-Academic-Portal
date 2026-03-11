@@ -57,13 +57,15 @@ const AcademicSetup = () => {
 
     const handleDelete = (id) => {
         setConfirm({
-            message: 'Are you sure you want to delete this subject?',
+            message: 'Are you sure you want to delete this subject? All associated attendance, marks, and resources will also be deleted.',
             onConfirm: async () => {
                 try {
                     await api.delete(`/admin/subject/${id}`);
                     fetchSubjects();
-                } catch {
-                    setStatus({ type: 'error', msg: 'Failed to delete subject.' });
+                    setStatus({ type: 'success', msg: 'Subject deleted successfully.' });
+                    setTimeout(() => setStatus(null), 3000);
+                } catch (e) {
+                    setStatus({ type: 'error', msg: e.response?.data || 'Failed to delete subject.' });
                 }
             },
         });

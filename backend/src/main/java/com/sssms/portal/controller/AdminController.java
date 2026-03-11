@@ -191,8 +191,12 @@ public class AdminController {
 
     @DeleteMapping("/subject/{id}")
         public ResponseEntity<?> deleteSubject(@PathVariable Long id) {
-            subjectRepository.deleteById(id);
-            return ResponseEntity.ok("Subject Deleted Successfully");
+            try {
+                adminService.deleteSubject(id);
+                return ResponseEntity.ok("Subject Deleted Successfully");
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body("Failed to delete subject: " + e.getMessage());
+            }
         }
 
     @GetMapping("/student/{id}/profile")

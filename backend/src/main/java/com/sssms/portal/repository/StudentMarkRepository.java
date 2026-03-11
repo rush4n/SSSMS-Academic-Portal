@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface StudentMarkRepository extends JpaRepository<StudentMark, Long> {
     List<StudentMark> findByStudentId(Long studentId);
+    List<StudentMark> findByAssessmentId(Long assessmentId);
 }
+

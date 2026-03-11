@@ -36,9 +36,12 @@ public class AdminService {
     private final ProfessionalDevelopmentRepository pdRepository;
 
     private final AttendanceRecordRepository attendanceRecordRepository;
+    private final AttendanceSessionRepository attendanceSessionRepository;
     private final StudentMarkRepository studentMarkRepository;
     private final AcademicMarksRepository academicMarksRepository;
     private final ClassAssessmentRepository classAssessmentRepository;
+    private final AssessmentRepository assessmentRepository;
+    private final ResourceRepository resourceRepository;
 
     @Transactional
     public String enrollStudent(StudentEnrollmentRequest request) {
@@ -156,6 +159,53 @@ public class AdminService {
         // 8. Delete student profile and user
         studentRepository.delete(student);
         userRepository.deleteById(studentId);
+    }
+
+    @Transactional
+    public void deleteSubject(Long subjectId) {
+        // 1. Delete AcademicMarks that reference this subject directly
+        academicMarksRepository.deleteAll(academicMarksRepository.findBySubjectId(subjectId));
+
+        // 2. For each allocation that references this subject, delete all downstream data
+        List<SubjectAllocation> allocations = allocationRepository.findBySubjectId(subjectId);
+        for (SubjectAllocation allocation : allocations) {
+            Long allocationId = allocation.getId();
+
+            // 2a. Remove this allocation from all students' extraCourses (clears student_extra_courses join table rows)
+            List<Student> studentsWithCourse = studentRepository.findAll().stream()
+                    .filter(s -> s.getExtraCourses().stream().anyMatch(ec -> ec.getId().equals(allocationId)))
+                    .collect(java.util.stream.Collectors.toList());
+            for (Student s : studentsWithCourse) {
+                s.getExtraCourses().removeIf(ec -> ec.getId().equals(allocationId));
+                studentRepository.save(s);
+            }
+
+            // 2b. Delete academic resources uploaded for this allocation
+            resourceRepository.deleteAll(resourceRepository.findByAllocationId(allocationId));
+
+            // 2c. Delete class assessments for this allocation
+            classAssessmentRepository.deleteAll(classAssessmentRepository.findByAllocationId(allocationId));
+
+            // 2d. Delete student marks for each assessment of this allocation
+            List<com.sssms.portal.entity.Assessment> assessments = assessmentRepository.findByAllocationId(allocationId);
+            for (com.sssms.portal.entity.Assessment assessment : assessments) {
+                studentMarkRepository.deleteAll(studentMarkRepository.findByAssessmentId(assessment.getId()));
+            }
+            assessmentRepository.deleteAll(assessments);
+
+            // 2e. Delete attendance records for each session of this allocation
+            List<com.sssms.portal.entity.AttendanceSession> sessions = attendanceSessionRepository.findByAllocationId(allocationId);
+            for (com.sssms.portal.entity.AttendanceSession session : sessions) {
+                attendanceRecordRepository.deleteAll(attendanceRecordRepository.findBySessionId(session.getId()));
+            }
+            attendanceSessionRepository.deleteAll(sessions);
+        }
+
+        // 3. Delete allocations
+        allocationRepository.deleteAll(allocations);
+
+        // 4. Finally delete the subject
+        subjectRepository.deleteById(subjectId);
     }
 
     public String allocateSubject(AllocationRequest request) {
