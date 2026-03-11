@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { ChevronDown, ChevronUp, BookOpen, Star, Download, FileText, ArrowLeft } from 'lucide-react';
+import { ChevronDown, ChevronUp, BookOpen, Star, Download, FileText, ArrowLeft, Archive } from 'lucide-react';
+
+const formatYear = (str) => str ? str.replace(/_/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase()) : '';
 
 const StudentResults = () => {
     const navigate = useNavigate();
@@ -10,18 +12,29 @@ const StudentResults = () => {
     const [scorecard, setScorecard] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // Archives
+    const [archivedYears, setArchivedYears] = useState([]);
+    const [selectedYear, setSelectedYear] = useState(null); // null = current year
+
     // State to track which subject is expanded
     const [expandedSubject, setExpandedSubject] = useState(null);
 
+    // Fetch archived years on mount
+    useEffect(() => {
+        api.get('/student/archived-years').then(res => setArchivedYears(res.data)).catch(() => {});
+    }, []);
+
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             try {
-                // 1. Fetch Final Ledger Results (SGPA)
+                // 1. Fetch Final Ledger Results (SGPA) — always all semesters
                 const sgpaRes = await api.get('/student/my-results');
                 setSgpaResults(sgpaRes.data);
 
-                // 2. Fetch Internal Assessments (raw marks)
-                const assessRes = await api.get('/student/my-assessments');
+                // 2. Fetch Internal Assessments (raw marks) — filtered by year
+                const yearParam = selectedYear ? `?year=${selectedYear}` : '';
+                const assessRes = await api.get(`/student/my-assessments${yearParam}`);
 
                 // Group assessments by Subject Name
                 const grouped = assessRes.data.reduce((acc, curr) => {
@@ -35,8 +48,8 @@ const StudentResults = () => {
 
                 setAssessments(grouped);
 
-                // 3. Fetch Cumulative Scorecard (calculated marks)
-                const scorecardRes = await api.get('/student/scorecard');
+                // 3. Fetch Scorecard (calculated marks) — filtered by year
+                const scorecardRes = await api.get(`/student/scorecard${yearParam}`);
                 setScorecard(scorecardRes.data);
 
             } catch {
@@ -46,7 +59,7 @@ const StudentResults = () => {
             }
         };
         fetchData();
-    }, []);
+    }, [selectedYear]);
 
     const toggleSubject = (subject) => {
         if (expandedSubject === subject) {
@@ -210,7 +223,44 @@ const StudentResults = () => {
             <button onClick={() => navigate('/student/dashboard')} className="mb-4 flex items-center text-gray-600 hover:text-blue-600 transition-colors">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
             </button>
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Academic Performance</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Academic Performance</h1>
+
+            {/* Year Selector — Current + Archives */}
+            {archivedYears.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 mb-8">
+                    <button
+                        onClick={() => setSelectedYear(null)}
+                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                            selectedYear === null
+                                ? 'bg-indigo-600 text-white shadow-sm'
+                                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                        }`}
+                    >
+                        Current Year
+                    </button>
+                    {archivedYears.map(y => (
+                        <button
+                            key={y}
+                            onClick={() => setSelectedYear(y)}
+                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                                selectedYear === y
+                                    ? 'bg-amber-600 text-white shadow-sm'
+                                    : 'bg-white text-gray-500 border border-gray-200 hover:bg-amber-50'
+                            }`}
+                        >
+                            <Archive className="w-3.5 h-3.5" />
+                            {formatYear(y)}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {selectedYear && (
+                <div className="mb-6 bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-2 text-amber-800 text-sm">
+                    <Archive className="w-4 h-4" />
+                    Viewing archived data from <strong>{formatYear(selectedYear)}</strong>
+                </div>
+            )}
 
             {/* SECTION 1: SEMESTER-WISE SGPA/CGPA RESULTS */}
             <div className="mb-10">

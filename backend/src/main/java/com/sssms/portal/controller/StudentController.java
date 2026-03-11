@@ -32,10 +32,36 @@ public class StudentController {
     private final AcademicMarksRepository academicMarksRepository;
 
     @GetMapping("/my-attendance")
-    public ResponseEntity<?> getMyAttendance(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> getMyAttendance(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) String year) {
         if (userDetails == null) return ResponseEntity.status(401).build();
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-        return ResponseEntity.ok(studentService.getMyAttendance(user.getUserId()));
+        AcademicYear forYear = (year != null && !year.isEmpty()) ? AcademicYear.valueOf(year) : null;
+        return ResponseEntity.ok(studentService.getMyAttendance(user.getUserId(), forYear));
+    }
+
+    @GetMapping("/archived-years")
+    public ResponseEntity<?> getArchivedYears(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        Student student = studentRepository.findById(user.getUserId()).orElseThrow();
+
+        // Return all years before the student's current year that have data
+        AcademicYear currentYear = student.getAcademicYear();
+        AcademicYear[] allYears = AcademicYear.values();
+        List<String> archived = new java.util.ArrayList<>();
+        for (AcademicYear y : allYears) {
+            if (y.ordinal() < currentYear.ordinal()) {
+                // Check if there's any data for this year (marks or attendance)
+                boolean hasMarks = academicMarksRepository.findByStudentId(student.getId()).stream()
+                        .anyMatch(m -> m.getSubject().getAcademicYear() == y);
+                if (hasMarks) {
+                    archived.add(y.name());
+                }
+            }
+        }
+        return ResponseEntity.ok(archived);
     }
 
     @GetMapping("/my-results")
@@ -49,13 +75,20 @@ public class StudentController {
     }
 
     @GetMapping("/my-assessments")
-    public ResponseEntity<?> getMyAssessments(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> getMyAssessments(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) String year) {
         if (userDetails == null) return ResponseEntity.status(401).build();
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         Student student = studentRepository.findById(user.getUserId()).orElseThrow();
 
-        // Fetch from AcademicMarks table (new system)
-        List<AcademicMarks> marks = academicMarksRepository.findByStudentId(student.getId());
+        AcademicYear targetYear = (year != null && !year.isEmpty())
+                ? AcademicYear.valueOf(year) : student.getAcademicYear();
+
+        // Fetch from AcademicMarks table, filtered by target year
+        List<AcademicMarks> marks = academicMarksRepository.findByStudentId(student.getId()).stream()
+                .filter(m -> m.getSubject().getAcademicYear() == targetYear)
+                .collect(Collectors.toList());
 
         List<Map<String, Object>> response = marks.stream().map(m -> {
             Map<String, Object> map = new java.util.HashMap<>();
@@ -119,20 +152,28 @@ public class StudentController {
     }
 
     @GetMapping("/report-card")
-        public ResponseEntity<?> getReportCard(@AuthenticationPrincipal UserDetails userDetails) {
+        public ResponseEntity<?> getReportCard(
+                @AuthenticationPrincipal UserDetails userDetails,
+                @RequestParam(required = false) String year) {
             if (userDetails == null) return ResponseEntity.status(401).build();
             User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-            return ResponseEntity.ok(gradingService.generateReportCard(user.getUserId()));
+            AcademicYear forYear = (year != null && !year.isEmpty()) ? AcademicYear.valueOf(year) : null;
+            return ResponseEntity.ok(gradingService.generateReportCard(user.getUserId(), forYear));
         }
 
     @GetMapping("/scorecard")
-    public ResponseEntity<?> getCumulativeScorecard(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> getCumulativeScorecard(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) String year) {
         if (userDetails == null) return ResponseEntity.status(401).build();
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         Student student = studentRepository.findById(user.getUserId()).orElseThrow();
 
-        // Get report card data (calculated marks)
-        List<Map<String, Object>> reportCard = gradingService.generateReportCard(user.getUserId());
+        AcademicYear targetYear = (year != null && !year.isEmpty())
+                ? AcademicYear.valueOf(year) : null;
+
+        // Get report card data (calculated marks) — filtered by year if specified
+        List<Map<String, Object>> reportCard = gradingService.generateReportCard(user.getUserId(), targetYear);
 
         // Build comprehensive scorecard
         Map<String, Object> scorecard = new HashMap<>();

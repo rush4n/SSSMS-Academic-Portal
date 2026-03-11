@@ -65,12 +65,18 @@ public class StudentService {
     }
 
     public List<StudentAttendanceDTO> getMyAttendance(Long userId) {
+        return getMyAttendance(userId, null);
+    }
+
+    public List<StudentAttendanceDTO> getMyAttendance(Long userId, AcademicYear forYear) {
         Student student = studentRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Student profile not found"));
 
-        // 1. Get ALL Subjects for this Student's Year
+        AcademicYear targetYear = forYear != null ? forYear : student.getAcademicYear();
+
+        // 1. Get ALL Subjects for the target year
         List<Subject> subjects = subjectRepository.findAll().stream()
-                .filter(s -> s.getAcademicYear() == student.getAcademicYear())
+                .filter(s -> s.getAcademicYear() == targetYear)
                 .collect(Collectors.toList());
 
         Map<String, StudentAttendanceDTO> subjectMap = new HashMap<>();
@@ -88,7 +94,7 @@ public class StudentService {
 
         // 3. Find Allocations
         List<SubjectAllocation> allocations = allocationRepository.findAll().stream()
-                .filter(a -> a.getSubject().getAcademicYear() == student.getAcademicYear())
+                .filter(a -> a.getSubject().getAcademicYear() == targetYear)
                 .collect(Collectors.toList());
 
         // Add Extra Courses

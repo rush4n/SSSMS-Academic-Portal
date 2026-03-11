@@ -83,9 +83,20 @@ public class GradingService {
     }
 
     public List<Map<String, Object>> generateReportCard(Long studentId) {
+        return generateReportCard(studentId, null);
+    }
+
+    public List<Map<String, Object>> generateReportCard(Long studentId, AcademicYear forYear) {
         Student student = studentRepository.findById(studentId).orElseThrow();
 
         List<AcademicMarks> allMarks = marksRepository.findByStudentId(studentId);
+
+        // Filter by year if specified
+        if (forYear != null) {
+            allMarks = allMarks.stream()
+                    .filter(m -> m.getSubject().getAcademicYear() == forYear)
+                    .collect(Collectors.toList());
+        }
 
         Map<Subject, List<AcademicMarks>> marksBySubject = allMarks.stream()
                 .collect(Collectors.groupingBy(AcademicMarks::getSubject));

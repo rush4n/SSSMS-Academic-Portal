@@ -13,7 +13,8 @@ import {
     TrendingDown,
     AlertTriangle,
     Banknote,
-    GraduationCap
+    GraduationCap,
+    Archive
 } from 'lucide-react';
 
 const StudentDashboard = () => {
@@ -24,6 +25,8 @@ const StudentDashboard = () => {
     const [attendanceReport, setAttendanceReport] = useState([]);
     const [feeStatus, setFeeStatus] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [archivedYears, setArchivedYears] = useState([]);
+    const [selectedAttYear, setSelectedAttYear] = useState(null); // null = current year
 
     useEffect(() => {
         const fetchData = async () => {
@@ -41,6 +44,13 @@ const StudentDashboard = () => {
                 } catch {
                     // Fee status not available, that's OK
                 }
+
+                try {
+                    const archRes = await api.get('/student/archived-years');
+                    setArchivedYears(archRes.data);
+                } catch {
+                    // no archives
+                }
             } catch (error) {
                 console.error("Failed to load dashboard data");
             } finally {
@@ -49,6 +59,29 @@ const StudentDashboard = () => {
         };
         fetchData();
     }, []);
+
+    // Refetch attendance when year changes
+    useEffect(() => {
+        if (selectedAttYear === null) return; // already fetched on mount
+        const fetchArchivedAtt = async () => {
+            try {
+                const res = await api.get(`/student/my-attendance?year=${selectedAttYear}`);
+                setAttendanceReport(res.data);
+            } catch {
+                setAttendanceReport([]);
+            }
+        };
+        fetchArchivedAtt();
+    }, [selectedAttYear]);
+
+    const handleAttYearChange = (year) => {
+        if (year === selectedAttYear) return;
+        setSelectedAttYear(year);
+        if (year === null) {
+            // Refetch current year attendance
+            api.get('/student/my-attendance').then(res => setAttendanceReport(res.data)).catch(() => {});
+        }
+    };
 
     const overallPercentage = attendanceReport.length > 0
         ? Math.round(attendanceReport.reduce((acc, curr) => acc + curr.percentage, 0) / attendanceReport.length)
@@ -198,7 +231,7 @@ const StudentDashboard = () => {
 
             {/* Attendance Section */}
             <div className="mb-10">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-bold text-gray-900">My Academic Status</h2>
                     <div className="flex items-center bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
                         <span className="text-gray-500 text-sm mr-2">Overall Attendance:</span>
@@ -207,6 +240,43 @@ const StudentDashboard = () => {
                 </span>
                     </div>
                 </div>
+
+                {/* Year Selector */}
+                {archivedYears.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 mb-6">
+                        <button
+                            onClick={() => handleAttYearChange(null)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                                selectedAttYear === null
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                            }`}
+                        >
+                            Current Year
+                        </button>
+                        {archivedYears.map(y => (
+                            <button
+                                key={y}
+                                onClick={() => handleAttYearChange(y)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 ${
+                                    selectedAttYear === y
+                                        ? 'bg-amber-600 text-white'
+                                        : 'bg-white text-gray-500 border border-gray-200 hover:bg-amber-50'
+                                }`}
+                            >
+                                <Archive className="w-3 h-3" />
+                                {formatYear(y)}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {selectedAttYear && (
+                    <div className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-2.5 flex items-center gap-2 text-amber-800 text-xs">
+                        <Archive className="w-3.5 h-3.5" />
+                        Viewing archived attendance from <strong>{formatYear(selectedAttYear)}</strong>
+                    </div>
+                )}
 
                 {attendanceReport.length === 0 ? (
                     <div className="bg-white p-8 rounded-xl border border-gray-200 text-center text-gray-500">
