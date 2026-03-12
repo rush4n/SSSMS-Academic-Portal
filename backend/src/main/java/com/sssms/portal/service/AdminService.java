@@ -278,6 +278,7 @@ public class AdminService {
 
             Map<String, Object> response = new HashMap<>();
             response.put("firstName", faculty.getFirstName());
+            response.put("middleName", faculty.getMiddleName());
             response.put("lastName", faculty.getLastName());
             response.put("email", faculty.getUser().getEmail());
             response.put("dob", faculty.getDob());

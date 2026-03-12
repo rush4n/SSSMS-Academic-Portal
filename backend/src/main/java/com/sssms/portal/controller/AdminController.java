@@ -2,7 +2,9 @@ package com.sssms.portal.controller;
 
 import com.sssms.portal.dto.request.AllocationRequest;
 import com.sssms.portal.dto.request.FacultyEnrollmentRequest;
+import com.sssms.portal.dto.request.FacultyProfileUpdateRequest;
 import com.sssms.portal.dto.request.StudentEnrollmentRequest;
+import com.sssms.portal.dto.request.StudentProfileUpdateRequest;
 import com.sssms.portal.entity.AcademicYear;
 import com.sssms.portal.entity.Faculty;
 import com.sssms.portal.entity.ProfessionalDevelopment;
@@ -204,10 +206,58 @@ public class AdminController {
             return ResponseEntity.ok(studentService.getProfile(id));
         }
 
+    @PutMapping("/student/{id}/profile")
+        public ResponseEntity<?> updateStudentProfile(@PathVariable Long id, @RequestBody StudentProfileUpdateRequest request) {
+            Student student = studentRepository.findById(id).orElseThrow(() ->
+                new RuntimeException("Student not found"));
+
+            if (request.getFirstName() != null) student.setFirstName(request.getFirstName());
+            if (request.getMiddleName() != null) student.setMiddleName(request.getMiddleName());
+            if (request.getLastName() != null) student.setLastName(request.getLastName());
+            if (request.getPhoneNumber() != null) student.setPhoneNumber(request.getPhoneNumber());
+            if (request.getParentPhoneNumber() != null) student.setParentPhoneNumber(request.getParentPhoneNumber());
+            if (request.getAddress() != null) student.setAddress(request.getAddress());
+            if (request.getDob() != null) student.setDob(request.getDob());
+            if (request.getCoaEnrollmentNo() != null) student.setCoaEnrollmentNo(request.getCoaEnrollmentNo());
+            if (request.getGrNo() != null) student.setGrNo(request.getGrNo());
+            if (request.getAadharNo() != null) student.setAadharNo(request.getAadharNo());
+            if (request.getAbcId() != null) student.setAbcId(request.getAbcId());
+            if (request.getBloodGroup() != null) student.setBloodGroup(request.getBloodGroup());
+            if (request.getAcademicYear() != null) student.setAcademicYear(request.getAcademicYear());
+            if (request.getAdmissionCategory() != null) student.setAdmissionCategory(request.getAdmissionCategory());
+
+            studentRepository.save(student);
+            return ResponseEntity.ok("Student profile updated successfully");
+        }
+
     @GetMapping("/faculty/{id}/profile")
         public ResponseEntity<?> getFacultyProfile(@PathVariable Long id) {
             return ResponseEntity.ok(adminService.getFacultyProfile(id));
      }
+
+    @PutMapping("/faculty/{id}/profile")
+        public ResponseEntity<?> updateFacultyProfile(@PathVariable Long id, @RequestBody FacultyProfileUpdateRequest request) {
+            Faculty faculty = facultyRepository.findById(id).orElseThrow(() ->
+                new RuntimeException("Faculty not found"));
+
+            if (request.getFirstName() != null) faculty.setFirstName(request.getFirstName());
+            if (request.getMiddleName() != null) faculty.setMiddleName(request.getMiddleName());
+            if (request.getLastName() != null) faculty.setLastName(request.getLastName());
+            if (request.getPhoneNumber() != null) faculty.setPhoneNumber(request.getPhoneNumber());
+            if (request.getDob() != null) faculty.setDob(request.getDob());
+            if (request.getDesignation() != null) faculty.setDesignation(request.getDesignation());
+            if (request.getDepartment() != null) faculty.setDepartment(request.getDepartment());
+            if (request.getQualification() != null) faculty.setQualification(request.getQualification());
+            if (request.getJoiningDate() != null) faculty.setJoiningDate(request.getJoiningDate());
+            if (request.getCoaRegistrationNo() != null) faculty.setCoaRegistrationNo(request.getCoaRegistrationNo());
+            if (request.getCoaValidFrom() != null) faculty.setCoaValidFrom(request.getCoaValidFrom());
+            if (request.getCoaValidTill() != null) faculty.setCoaValidTill(request.getCoaValidTill());
+            if (request.getAadharNo() != null) faculty.setAadharNo(request.getAadharNo());
+            if (request.getPanCardNo() != null) faculty.setPanCardNo(request.getPanCardNo());
+
+            facultyRepository.save(faculty);
+            return ResponseEntity.ok("Faculty profile updated successfully");
+        }
 
     @GetMapping("/report-card/{studentId}")
     public ResponseEntity<?> getStudentReportCard(@PathVariable Long studentId) {
