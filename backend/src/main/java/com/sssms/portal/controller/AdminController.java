@@ -11,6 +11,7 @@ import com.sssms.portal.entity.ProfessionalDevelopment;
 import com.sssms.portal.entity.Student;
 import com.sssms.portal.entity.Subject;
 import com.sssms.portal.entity.SubjectAllocation;
+import com.sssms.portal.entity.User;
 import com.sssms.portal.repository.FacultyRepository;
 import com.sssms.portal.repository.ProfessionalDevelopmentRepository;
 import com.sssms.portal.repository.StudentRepository;
@@ -18,8 +19,10 @@ import com.sssms.portal.repository.SubjectAllocationRepository;
 import com.sssms.portal.repository.SubjectRepository;
 import com.sssms.portal.service.AdminService;
 import com.sssms.portal.service.StudentService;
+import com.sssms.portal.util.PasswordGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.sssms.portal.repository.UserRepository;
@@ -48,6 +51,7 @@ public class AdminController {
     private final com.sssms.portal.service.StudentService studentService;
     private final com.sssms.portal.service.GradingService gradingService;
     private final com.sssms.portal.service.GPAService gpaService;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/subjects")
     public ResponseEntity<?> createSubject(@RequestBody Subject subject) {
@@ -257,6 +261,44 @@ public class AdminController {
 
             facultyRepository.save(faculty);
             return ResponseEntity.ok("Faculty profile updated successfully");
+        }
+
+    // ==================== PASSWORD RESET ====================
+
+    @PostMapping("/student/{id}/reset-password")
+        public ResponseEntity<?> resetStudentPassword(@PathVariable Long id) {
+            Student student = studentRepository.findById(id).orElseThrow(() ->
+                new RuntimeException("Student not found"));
+            User user = userRepository.findById(id).orElseThrow(() ->
+                new RuntimeException("User not found"));
+
+            if (student.getLastName() == null || student.getDob() == null) {
+                return ResponseEntity.badRequest().body("Cannot reset password: Last name or DOB is missing");
+            }
+
+            String defaultPassword = PasswordGeneratorUtil.generate(student.getLastName(), student.getDob());
+            user.setPasswordHash(passwordEncoder.encode(defaultPassword));
+            userRepository.save(user);
+
+            return ResponseEntity.ok("Password reset to default successfully");
+        }
+
+    @PostMapping("/faculty/{id}/reset-password")
+        public ResponseEntity<?> resetFacultyPassword(@PathVariable Long id) {
+            Faculty faculty = facultyRepository.findById(id).orElseThrow(() ->
+                new RuntimeException("Faculty not found"));
+            User user = userRepository.findById(id).orElseThrow(() ->
+                new RuntimeException("User not found"));
+
+            if (faculty.getLastName() == null || faculty.getDob() == null) {
+                return ResponseEntity.badRequest().body("Cannot reset password: Last name or DOB is missing");
+            }
+
+            String defaultPassword = PasswordGeneratorUtil.generate(faculty.getLastName(), faculty.getDob());
+            user.setPasswordHash(passwordEncoder.encode(defaultPassword));
+            userRepository.save(user);
+
+            return ResponseEntity.ok("Password reset to default successfully");
         }
 
     @GetMapping("/report-card/{studentId}")

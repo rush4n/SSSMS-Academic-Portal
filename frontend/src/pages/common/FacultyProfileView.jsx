@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { User, Mail, BookOpen, Calendar, Phone, ArrowLeft, GraduationCap, ShieldCheck, FileText, Award, Edit2, Save, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Mail, BookOpen, Calendar, Phone, ArrowLeft, GraduationCap, ShieldCheck, FileText, Award, Edit2, Save, X, CheckCircle, AlertCircle, KeyRound } from 'lucide-react';
 import { useAuth } from '../../auth/useAuth';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
 const FacultyProfileView = () => {
     const { id } = useParams();
@@ -15,6 +16,8 @@ const FacultyProfileView = () => {
     const [editForm, setEditForm] = useState({});
     const [saving, setSaving] = useState(false);
     const [status, setStatus] = useState(null);
+    const [resettingPassword, setResettingPassword] = useState(false);
+    const [confirmDlg, setConfirmDlg] = useState(null);
 
     const isAdmin = user?.role === 'ROLE_ADMIN';
 
@@ -93,6 +96,27 @@ const FacultyProfileView = () => {
         }
     };
 
+    const resetPassword = async () => {
+        setConfirmDlg({
+            message: "Are you sure you want to reset this faculty member's password to default (LastName@DDMMYY)?",
+            confirmLabel: 'Reset Password',
+            onConfirm: async () => {
+                setResettingPassword(true);
+                setStatus(null);
+                try {
+                    await api.post(`/admin/faculty/${id}/reset-password`);
+                    setStatus({ type: 'success', msg: 'Password reset to default successfully!' });
+                    setTimeout(() => setStatus(null), 3000);
+                } catch (error) {
+                    setStatus({ type: 'error', msg: error.response?.data || 'Failed to reset password.' });
+                    setTimeout(() => setStatus(null), 5000);
+                } finally {
+                    setResettingPassword(false);
+                }
+            }
+        });
+    };
+
     if (loading) return <div className="p-8 text-gray-500">Loading Profile...</div>;
     if (!profile) return <div className="p-8 text-red-500">Profile not found.</div>;
 
@@ -111,9 +135,18 @@ const FacultyProfileView = () => {
                     <p className="text-gray-600 mt-1">Viewing details for {profile.firstName} {profile.lastName}</p>
                 </div>
                 {isAdmin && !isEditing && (
-                    <button onClick={startEdit} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm">
-                        <Edit2 className="w-4 h-4" /> Edit Profile
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={resetPassword}
+                            disabled={resettingPassword}
+                            className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors shadow-sm disabled:opacity-50"
+                        >
+                            <KeyRound className="w-4 h-4" /> {resettingPassword ? 'Resetting...' : 'Reset Password'}
+                        </button>
+                        <button onClick={startEdit} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm">
+                            <Edit2 className="w-4 h-4" /> Edit Profile
+                        </button>
+                    </div>
                 )}
                 {isAdmin && isEditing && (
                     <div className="flex gap-2">
@@ -292,6 +325,9 @@ const FacultyProfileView = () => {
                     )}
                 </>
             )}
+
+            {/* Confirm Dialog */}
+            <ConfirmDialog config={confirmDlg} onClose={() => setConfirmDlg(null)} />
         </div>
     );
 };

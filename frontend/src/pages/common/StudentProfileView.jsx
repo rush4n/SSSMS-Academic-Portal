@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
-import { User, Mail, Calendar, Book, TrendingUp, Clock, ArrowLeft, Phone, MapPin, ShieldCheck, Edit2, Save, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Mail, Calendar, Book, TrendingUp, Clock, ArrowLeft, Phone, MapPin, ShieldCheck, Edit2, Save, X, CheckCircle, AlertCircle, KeyRound } from 'lucide-react';
 import { useAuth } from '../../auth/useAuth';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
 
 const StudentProfileView = () => {
     const { id } = useParams();
@@ -16,6 +17,8 @@ const StudentProfileView = () => {
     const [editForm, setEditForm] = useState({});
     const [saving, setSaving] = useState(false);
     const [status, setStatus] = useState(null);
+    const [resettingPassword, setResettingPassword] = useState(false);
+    const [confirmDlg, setConfirmDlg] = useState(null);
 
     const isAdmin = user.role === 'ROLE_ADMIN';
 
@@ -41,15 +44,7 @@ const StudentProfileView = () => {
 
     // Edit functions (Admin only)
     const startEdit = () => {
-        // Debug: log the profile to see what fields have data
-        console.log('DEBUG - Full profile object:', profile);
-        console.log('DEBUG - middleName:', profile.middleName);
-        console.log('DEBUG - grNo:', profile.grNo);
-        console.log('DEBUG - abcId:', profile.abcId);
-        console.log('DEBUG - coaEnrollmentNo:', profile.coaEnrollmentNo);
-
-        // Copy all profile fields to edit form
-        const formData = {
+        setEditForm({
             firstName: profile.firstName || '',
             middleName: profile.middleName || '',
             lastName: profile.lastName || '',
@@ -64,10 +59,7 @@ const StudentProfileView = () => {
             bloodGroup: profile.bloodGroup || '',
             academicYear: profile.currentYear || 'FIRST_YEAR',
             admissionCategory: profile.admissionCategory || 'CAP_ROUND_1'
-        };
-
-        console.log('DEBUG - formData being set:', formData);
-        setEditForm(formData);
+        });
         setIsEditing(true);
         setStatus(null);
     };
@@ -119,6 +111,27 @@ const StudentProfileView = () => {
         } finally {
             setSaving(false);
         }
+    };
+
+    const resetPassword = async () => {
+        setConfirmDlg({
+            message: "Are you sure you want to reset this student's password to default (LastName@DDMMYY)?",
+            confirmLabel: 'Reset Password',
+            onConfirm: async () => {
+                setResettingPassword(true);
+                setStatus(null);
+                try {
+                    await api.post(`/admin/student/${id}/reset-password`);
+                    setStatus({ type: 'success', msg: 'Password reset to default successfully!' });
+                    setTimeout(() => setStatus(null), 3000);
+                } catch (error) {
+                    setStatus({ type: 'error', msg: error.response?.data || 'Failed to reset password.' });
+                    setTimeout(() => setStatus(null), 5000);
+                } finally {
+                    setResettingPassword(false);
+                }
+            }
+        });
     };
 
     if (loading) return <div className="p-8 text-gray-500">Loading Profile...</div>;
@@ -206,12 +219,21 @@ const StudentProfileView = () => {
                     <p className="text-gray-600 mt-1">Viewing academic details for {profile.firstName}.</p>
                 </div>
                 {isAdmin && !isEditing && (
-                    <button
-                        onClick={startEdit}
-                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
-                    >
-                        <Edit2 className="w-4 h-4" /> Edit Profile
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={resetPassword}
+                            disabled={resettingPassword}
+                            className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors shadow-sm disabled:opacity-50"
+                        >
+                            <KeyRound className="w-4 h-4" /> {resettingPassword ? 'Resetting...' : 'Reset Password'}
+                        </button>
+                        <button
+                            onClick={startEdit}
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+                        >
+                            <Edit2 className="w-4 h-4" /> Edit Profile
+                        </button>
+                    </div>
                 )}
                 {isAdmin && isEditing && (
                     <div className="flex gap-2">
@@ -338,6 +360,9 @@ const StudentProfileView = () => {
                     </div>
                 )}
             </div>
+
+            {/* Confirm Dialog */}
+            <ConfirmDialog config={confirmDlg} onClose={() => setConfirmDlg(null)} />
         </div>
     );
 };
