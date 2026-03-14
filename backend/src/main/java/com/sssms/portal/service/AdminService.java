@@ -253,7 +253,38 @@ public class AdminService {
         }).collect(Collectors.toList());
     }
 
+    @Transactional
     public void removeAllocation(Long id) {
+        // 1. Delete attendance records for each session of this allocation
+        List<com.sssms.portal.entity.AttendanceSession> sessions = attendanceSessionRepository.findByAllocationId(id);
+        for (com.sssms.portal.entity.AttendanceSession session : sessions) {
+            attendanceRecordRepository.deleteAll(attendanceRecordRepository.findBySessionId(session.getId()));
+        }
+        attendanceSessionRepository.deleteAll(sessions);
+
+        // 2. Delete class assessments for this allocation
+        classAssessmentRepository.deleteAll(classAssessmentRepository.findByAllocationId(id));
+
+        // 3. Delete student marks for each assessment of this allocation
+        List<com.sssms.portal.entity.Assessment> assessments = assessmentRepository.findByAllocationId(id);
+        for (com.sssms.portal.entity.Assessment assessment : assessments) {
+            studentMarkRepository.deleteAll(studentMarkRepository.findByAssessmentId(assessment.getId()));
+        }
+        assessmentRepository.deleteAll(assessments);
+
+        // 4. Delete academic resources uploaded for this allocation
+        resourceRepository.deleteAll(resourceRepository.findByAllocationId(id));
+
+        // 5. Remove this allocation from all students' extraCourses (clears student_extra_courses join table rows)
+        List<Student> studentsWithCourse = studentRepository.findAll().stream()
+                .filter(s -> s.getExtraCourses().stream().anyMatch(ec -> ec.getId().equals(id)))
+                .collect(java.util.stream.Collectors.toList());
+        for (Student s : studentsWithCourse) {
+            s.getExtraCourses().removeIf(ec -> ec.getId().equals(id));
+            studentRepository.save(s);
+        }
+
+        // 6. Delete the allocation itself
         allocationRepository.deleteById(id);
     }
 
